@@ -96,7 +96,7 @@ public class Turn implements Command {
               var currentNation = game.getCurrentNation();
               var currentPlayer = game.getCurrentPlayer();
               if (currentNation.isPresent() && currentPlayer.isPresent()) {
-                long allowedClaimAmount = currentNation.get().getAllowedClaimAmount(game.claims(), game.constants(), game.map());
+                long allowedClaimAmount = currentNation.get().getAllowedClaimAmount(game.claims(), game.constants(), game.map(), game.getAllies(currentNation.get().identifier()));
                 String claimStr = "They may claim " + allowedClaimAmount + " " + (allowedClaimAmount == 1 ? "territory" : "territories") + " this turn.";
                 embedBuilder.setFooter("It is " + currentPlayer.get().name() + "'s turn. " + claimStr);
               }

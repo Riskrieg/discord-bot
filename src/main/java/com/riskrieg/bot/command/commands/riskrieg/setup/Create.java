@@ -30,6 +30,8 @@ import com.riskrieg.codec.decode.RkpDecoder;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.game.GameConstants;
+import com.riskrieg.core.api.game.feature.Feature;
+import com.riskrieg.core.api.game.feature.FeatureFlag;
 import com.riskrieg.core.api.identifier.GameIdentifier;
 import com.riskrieg.core.api.identifier.GroupIdentifier;
 import com.riskrieg.palette.RkpColor;
@@ -77,10 +79,11 @@ public class Create implements Command {
   }
 
   @Override
-  public CommandData commandData() {
+  public CommandData commandData() { // TODO: add featureflag options // create mode:mode
     return Commands.slash(settings().name(), settings().description())
         .addOptions(OptionDataUtil.modes().setRequired(true), OptionDataUtil.palettes().setRequired(false))
-        .addOption(OptionType.ATTACHMENT, "custom", "Provide your own palette file.", false);
+        .addOption(OptionType.ATTACHMENT, "custom", "Provide your own palette file.", false)
+        .addOption(OptionType.BOOLEAN, "enable-alliances", "Whether or not to enable alliances.", false);
   }
 
   @Override
@@ -106,10 +109,18 @@ public class Create implements Command {
 
       final RkpPalette palette = getPalette(event);
 
+      final FeatureFlag alliances;
+      OptionMapping alliancesOpt = event.getOption("enable-alliances");
+      if (alliancesOpt != null && alliancesOpt.getAsBoolean()) {
+        alliances = new FeatureFlag(Feature.ALLIANCES, true);
+      } else {
+        alliances = new FeatureFlag(Feature.ALLIANCES, false);
+      }
+
       // Command execution
       Riskrieg api = RiskriegBuilder.createLocal(Path.of(BotConstants.REPOSITORY_PATH)).build();
       api.createGroup(GroupIdentifier.of(guild.getId()))
-          .queue(group -> group.createGame(GameConstants.standard().clampTo(palette), palette, GameIdentifier.of(event.getChannel().getId()), mode).queue(game -> {
+          .queue(group -> group.createGame(GameConstants.standard().clampTo(palette), palette, GameIdentifier.of(event.getChannel().getId()), mode, alliances).queue(game -> {
                 hook.sendMessage(genericSuccess).queue(success -> {
                   hook.sendMessageEmbeds(createMessage(event.getMember(), modeStr, palette.name()))
                       .addFile(generateColorChoices(game.palette()), "color-choices.png", new AttachmentOption[0])

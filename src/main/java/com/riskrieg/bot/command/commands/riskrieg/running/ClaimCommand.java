@@ -145,7 +145,7 @@ public class ClaimCommand implements Command {
                     Optional<Nation> optCurrent = currentPlayer.flatMap(player -> game.getNation(player.identifier()));
                     String claimStr = "They may claim an unknown amount of territories this turn.";
                     if (optCurrent.isPresent()) {
-                      long allowedClaimAmount = optCurrent.get().getAllowedClaimAmount(game.claims(), game.constants(), game.map());
+                      long allowedClaimAmount = optCurrent.get().getAllowedClaimAmount(game.claims(), game.constants(), game.map(), game.getAllies(optCurrent.get().identifier()));
                       claimStr = "They may claim " + allowedClaimAmount + " " + (allowedClaimAmount == 1 ? "territory" : "territories") + " this turn.";
                     }
                     embedBuilder.setFooter("It is " + (currentPlayer.isPresent() ? currentPlayer.get().name() : "someone") + "'s turn. " + claimStr);
