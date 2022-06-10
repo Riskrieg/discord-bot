@@ -36,6 +36,7 @@ import com.riskrieg.bot.command.commands.riskrieg.running.Skip;
 import com.riskrieg.bot.command.commands.riskrieg.running.Stats;
 import com.riskrieg.bot.command.commands.riskrieg.running.Turn;
 import com.riskrieg.bot.command.commands.riskrieg.running.alliances.Ally;
+import com.riskrieg.bot.command.commands.riskrieg.running.alliances.ListAlliances;
 import com.riskrieg.bot.command.commands.riskrieg.running.alliances.Unally;
 import com.riskrieg.bot.command.commands.riskrieg.setup.Create;
 import com.riskrieg.bot.command.commands.riskrieg.setup.Join;
@@ -86,7 +87,7 @@ public class Main {
 
           new Ally(),
           new Unally(),
-//          new ListAlliances(),
+          new ListAlliances(),
 
           new Leave(),
           new Kick(),
