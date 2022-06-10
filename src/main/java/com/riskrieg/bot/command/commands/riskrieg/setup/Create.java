@@ -109,6 +109,12 @@ public class Create implements Command {
 
       final RkpPalette palette = getPalette(event);
 
+      // TODO: Palettes temporarily limited to strictly 16 colors until UI generation is updated to support 2-16
+      if (palette.size() != 16) {
+        hook.sendMessage(MessageUtil.error(settings, "Palettes must currently support exactly 16 colors. This will be updated in the future.")).queue();
+        return;
+      }
+
       final FeatureFlag alliances;
       OptionMapping alliancesOpt = event.getOption("enable-alliances");
       if (alliancesOpt != null && alliancesOpt.getAsBoolean()) {
@@ -122,7 +128,7 @@ public class Create implements Command {
       api.createGroup(GroupIdentifier.of(guild.getId()))
           .queue(group -> group.createGame(GameConstants.standard().clampTo(palette), palette, GameIdentifier.of(event.getChannel().getId()), mode, alliances).queue(game -> {
                 hook.sendMessage(genericSuccess).queue(success -> {
-                  hook.sendMessageEmbeds(createMessage(event.getMember(), modeStr, palette.name()))
+                  hook.sendMessageEmbeds(createMessage(event.getMember(), modeStr, palette.name(), alliances))
                       .addFile(generateColorChoices(game.palette()), "color-choices.png", new AttachmentOption[0])
                       .queue();
                 });
@@ -150,7 +156,7 @@ public class Create implements Command {
     return palette;
   }
 
-  private MessageEmbed createMessage(Member creator, String modeString, String paletteName) {
+  private MessageEmbed createMessage(Member creator, String modeString, String paletteName, FeatureFlag alliances) {
     EmbedBuilder embedBuilder = new EmbedBuilder();
     embedBuilder.setColor(settings.embedColor());
     embedBuilder.setTitle("Join Game");
@@ -158,11 +164,13 @@ public class Create implements Command {
     if (creator != null) {
       embedBuilder.setDescription("Creator: " + creator.getAsMention()
           + "\nMode: **" + toTitleCase(modeString) + "**"
-          + "\nPalette: **" + paletteName + "**");
+          + "\nPalette: **" + paletteName + "**"
+          + "\nAlliances: **" + (alliances.enabled() ? "enabled" : "disabled") + "**");
     } else {
       embedBuilder.setDescription("Creator: Unknown"
           + "\nMode: **" + toTitleCase(modeString) + "**"
-          + "\nPalette: **" + paletteName + "**");
+          + "\nPalette: **" + paletteName + "**"
+          + "\nAlliances: **" + (alliances.enabled() ? "enabled" : "disabled") + "**");
     }
     embedBuilder.setFooter("Please select a color to join the game. You may also choose a map at any time before starting the game.");
     return embedBuilder.build();

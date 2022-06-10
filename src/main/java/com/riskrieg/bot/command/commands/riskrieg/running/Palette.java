@@ -101,6 +101,12 @@ public class Palette implements Command {
       }
       final RkpPalette palette = optPalette.get();
 
+      // TODO: Palettes temporarily limited to strictly 16 colors until UI generation is updated to support 2-16
+      if (palette.size() != 16) {
+        hook.sendMessage(MessageUtil.error(settings, "Palettes must currently support exactly 16 colors. This will be updated in the future.")).queue();
+        return;
+      }
+
       // Command execution
       api.retrieveGroup(GroupIdentifier.of(guild.getId())).queue(group -> group.retrieveGame(GameIdentifier.of(event.getChannel().getId())).queue(game -> {
             if (game.players().stream().anyMatch(player -> player.identifier().equals(PlayerIdentifier.of(member.getId())))) {
