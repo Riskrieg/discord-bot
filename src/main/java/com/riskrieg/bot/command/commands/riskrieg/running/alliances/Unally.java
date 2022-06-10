@@ -81,8 +81,6 @@ public class Unally implements Command {
       }
 
       // Command execution
-
-      // Command execution
       Riskrieg api = RiskriegBuilder.createLocal(Path.of(BotConstants.REPOSITORY_PATH)).build();
       api.retrieveGroup(GroupIdentifier.of(guild.getId())).queue(group -> group.retrieveGame(GameIdentifier.of(event.getChannel().getId())).queue(game -> {
             boolean wasAllied = game.allianceStatus(PlayerIdentifier.of(requester.getId()), PlayerIdentifier.of(requestee.getId())).equals(AllianceStatus.COMPLETE);
