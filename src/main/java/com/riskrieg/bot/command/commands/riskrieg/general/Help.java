@@ -1,6 +1,6 @@
 /*
  *     Riskrieg, an open-source conflict simulation game.
- *     Copyright (C) 2021 Aaron Yoder <aaronjyoder@gmail.com> and Contributors
+ *     Copyright (C) 2018-2022 Aaron Yoder <aaronjyoder@gmail.com> and Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
