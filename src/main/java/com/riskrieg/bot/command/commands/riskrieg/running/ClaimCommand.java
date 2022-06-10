@@ -44,6 +44,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -183,10 +184,37 @@ public class ClaimCommand implements Command {
 
   private List<TerritoryIdentity> parseTerritoryList(String input) {
     List<TerritoryIdentity> territoryList = new ArrayList<>();
-    String[] territoryArray = input.split("[\s,|/\\\\]+");
-    for (String territory : territoryArray) {
-      if (!territory.isBlank()) {
-        territoryList.add(new TerritoryIdentity(territory));
+    String[] territoryArray = input.toUpperCase(Locale.ROOT).split("[\s,|/\\\\]+"); // toUppercase() so we don't have to worry about lowercase letters
+    for (String territoryString : territoryArray) {
+      if (territoryString.matches("\\d+[a-zA-Z]\\.\\.\\d+[a-zA-Z]")) { // Parse range
+        String[] range = territoryString.split("\\.\\.");
+        String lhs = range[0].trim();
+        String rhs = range[1].trim();
+
+        if (!lhs.isBlank() && !rhs.isBlank() && lhs.length() >= 2 && rhs.length() >= 2) {
+          char lhsLetter = lhs.charAt(lhs.length() - 1);
+          char rhsLetter = rhs.charAt(rhs.length() - 1);
+          if (lhsLetter == rhsLetter) {
+            try {
+              int lowerBound = Integer.parseInt(lhs.substring(0, lhs.length() - 1));
+              int upperBound = Integer.parseInt(rhs.substring(0, rhs.length() - 1));
+              if (lowerBound > upperBound) {
+                int temp = upperBound;
+                upperBound = lowerBound;
+                lowerBound = temp;
+              }
+              for (int i = lowerBound; i <= upperBound; i++) {
+                String territoryId = i + String.valueOf(lhsLetter);
+                territoryList.add(new TerritoryIdentity(territoryId));
+              }
+            } catch (NumberFormatException e) {
+              return List.of();
+            }
+          }
+        }
+
+      } else if (!territoryString.isBlank()) {
+        territoryList.add(new TerritoryIdentity(territoryString));
       }
     }
     return territoryList;
