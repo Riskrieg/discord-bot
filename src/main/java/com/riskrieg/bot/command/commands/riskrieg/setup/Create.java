@@ -79,7 +79,7 @@ public class Create implements Command {
   }
 
   @Override
-  public CommandData commandData() { // TODO: add featureflag options // create mode:mode
+  public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
         .addOptions(OptionDataUtil.modes().setRequired(true), OptionDataUtil.palettes().setRequired(false))
         .addOption(OptionType.ATTACHMENT, "custom", "Provide your own palette file.", false)
