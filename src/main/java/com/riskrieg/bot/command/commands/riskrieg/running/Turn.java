@@ -90,7 +90,7 @@ public class Turn implements Command {
               String fileName = game.map().codename() + ".png";
               EmbedBuilder embedBuilder = new EmbedBuilder();
               embedBuilder.setColor(settings.embedColor());
-              embedBuilder.setTitle(game.map().codename());
+              embedBuilder.setTitle(game.map().displayName());
               embedBuilder.setImage("attachment://" + fileName);
 
               var currentNation = game.getCurrentNation();

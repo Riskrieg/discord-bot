@@ -105,6 +105,10 @@ public class Ally implements Command {
       api.retrieveGroup(GroupIdentifier.of(guild.getId())).queue(group -> group.retrieveGame(GameIdentifier.of(event.getChannel().getId())).queue(game -> {
             game.ally(PlayerIdentifier.of(requester.getId()), PlayerIdentifier.of(requestee.getId())).queue(allianceEvent -> {
 
+              System.out.println(requester.getEffectiveName() + " sending request to " + requestee.getEffectiveName() + " | " + allianceEvent.status());
+
+              System.out.println(game.getAllies(PlayerIdentifier.of(requester.getId())));
+
               EmbedBuilder embedBuilder = new EmbedBuilder();
               embedBuilder.setColor(settings.embedColor());
 

@@ -53,7 +53,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 
-public class Main {
+public class Main { // TODO: Add command that lets you see a territory's neighbors
+  // TODO: Add command that lets players change their name
 
   public static void main(String[] args) {
     registerFonts();

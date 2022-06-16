@@ -210,7 +210,7 @@ public class ListAlliances implements Command {
     Set<PlayerIdentifier> identifiers = new HashSet<>();
 
     game.nations().forEach(n -> {
-      if (game.allianceStatus(nation.identifier(), n.identifier()).equals(AllianceStatus.SENT)) {
+      if (game.allianceStatus(nation.identifier(), n.identifier()).equals(AllianceStatus.OUTGOING)) {
         identifiers.add(n.leaderIdentifier());
       }
     });
@@ -222,7 +222,7 @@ public class ListAlliances implements Command {
     Set<PlayerIdentifier> identifiers = new HashSet<>();
 
     game.nations().forEach(n -> {
-      if (game.allianceStatus(nation.identifier(), n.identifier()).equals(AllianceStatus.RECEIVED)) {
+      if (game.allianceStatus(nation.identifier(), n.identifier()).equals(AllianceStatus.INCOMING)) {
         identifiers.add(n.leaderIdentifier());
       }
     });

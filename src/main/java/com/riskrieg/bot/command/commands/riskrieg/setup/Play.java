@@ -113,6 +113,7 @@ public class Play implements Command {
               game.start(order, reverseOrder, randomizeStart).queue(currentPlayer -> {
                 StringBuilder description = new StringBuilder();
                 description.append("Turn order: **").append(order.displayName()).append("**.").append("\n");
+                // TODO: Notify if reverse order and randomize start is on
                 description.append("*").append(order.description()).append("*").append("\n");
                 description.append("\n");
                 description.append("The game has begun!");

@@ -101,19 +101,27 @@ public class Unally implements Command {
       // Command execution
       Riskrieg api = RiskriegBuilder.createLocal(Path.of(BotConstants.REPOSITORY_PATH)).build();
       api.retrieveGroup(GroupIdentifier.of(guild.getId())).queue(group -> group.retrieveGame(GameIdentifier.of(event.getChannel().getId())).queue(game -> {
-            boolean wasAllied = game.allianceStatus(PlayerIdentifier.of(requester.getId()), PlayerIdentifier.of(requestee.getId())).equals(AllianceStatus.COMPLETE);
+            AllianceStatus previousStatus = game.allianceStatus(PlayerIdentifier.of(requester.getId()), PlayerIdentifier.of(requestee.getId()));
+
+            if (previousStatus == AllianceStatus.NONE) {
+              hook.sendMessage(MessageUtil.error(settings, "You are not in an alliance with that player.")).queue();
+              return;
+            }
+
             game.unally(PlayerIdentifier.of(requester.getId()), PlayerIdentifier.of(requestee.getId())).queue(allianceEvent -> {
 
               EmbedBuilder embedBuilder = new EmbedBuilder();
               embedBuilder.setColor(settings.embedColor());
 
-              if (wasAllied) {
+              if (previousStatus == AllianceStatus.COMPLETE) {
                 embedBuilder.setTitle("Alliance Broken"); // TODO: notify about updated claim count
                 embedBuilder.setDescription("**" + allianceEvent.allyLeader().name() + "** and **" + allianceEvent.coallyLeader().name() + "** have broken their alliance.");
-              } else {
+              } else if (previousStatus == AllianceStatus.INCOMING) {
                 embedBuilder.setTitle("Alliance Request Denied");
-                embedBuilder.setDescription(
-                    "**The alliance request between" + allianceEvent.allyLeader().name() + "** and **" + allianceEvent.coallyLeader().name() + " has been rejected**.");
+                embedBuilder.setDescription("**" + allianceEvent.allyLeader().name() + "** has rejected **" + allianceEvent.coallyLeader().name() + "**'s alliance request.");
+              } else if (previousStatus == AllianceStatus.OUTGOING) {
+                embedBuilder.setTitle("Alliance Request Cancelled");
+                embedBuilder.setDescription("**" + allianceEvent.allyLeader().name() + "** has cancelled their alliance request to **" + allianceEvent.coallyLeader().name() + "**.");
               }
               embedBuilder.setFooter("Version: " + Riskrieg.VERSION);
               embedBuilder.setTimestamp(Instant.now());
