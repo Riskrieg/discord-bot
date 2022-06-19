@@ -26,6 +26,7 @@ import com.riskrieg.bot.util.ImageUtil;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.OptionDataUtil;
 import com.riskrieg.bot.util.ParseUtil;
+import com.riskrieg.bot.util.StringUtil;
 import com.riskrieg.codec.decode.RkpDecoder;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
@@ -163,12 +164,12 @@ public class Create implements Command {
     embedBuilder.setImage("attachment://color-choices.png");
     if (creator != null) {
       embedBuilder.setDescription("Creator: " + creator.getAsMention()
-          + "\nMode: **" + toTitleCase(modeString) + "**"
+          + "\nMode: **" + StringUtil.toTitleCase(modeString) + "**"
           + "\nPalette: **" + paletteName + "**"
           + "\nAlliances: **" + (alliances.enabled() ? "enabled" : "disabled") + "**");
     } else {
       embedBuilder.setDescription("Creator: Unknown"
-          + "\nMode: **" + toTitleCase(modeString) + "**"
+          + "\nMode: **" + StringUtil.toTitleCase(modeString) + "**"
           + "\nPalette: **" + paletteName + "**"
           + "\nAlliances: **" + (alliances.enabled() ? "enabled" : "disabled") + "**");
     }
@@ -220,23 +221,6 @@ public class Create implements Command {
     } catch (IOException e) {
       return new byte[0];
     }
-  }
-
-  private String toTitleCase(String input) {
-    StringBuilder titleCase = new StringBuilder(input.length());
-    boolean nextTitleCase = true;
-
-    for (char c : input.toLowerCase().toCharArray()) {
-      if (Character.isSpaceChar(c)) {
-        nextTitleCase = true;
-      } else if (nextTitleCase) {
-        c = Character.toTitleCase(c);
-        nextTitleCase = false;
-      }
-      titleCase.append(c);
-    }
-
-    return titleCase.toString();
   }
 
 }

@@ -24,6 +24,7 @@ import com.riskrieg.bot.command.settings.Settings;
 import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.ParseUtil;
+import com.riskrieg.bot.util.StringUtil;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.game.entity.nation.Nation;
@@ -130,28 +131,10 @@ public class Join implements Command {
     RkpColor color = palette.get(nation.colorId()).orElse(palette.last());
     embedBuilder.setColor(color.toAwtColor());
     embedBuilder.setTitle("Join");
-    embedBuilder.setDescription("**" + player.name() + "** has joined the game as **" + toTitleCase(color.name()) + "**.");
+    embedBuilder.setDescription("**" + player.name() + "** has joined the game as **" + StringUtil.toTitleCase(color.name()) + "**.");
     embedBuilder.setFooter("Version: " + Riskrieg.VERSION);
     embedBuilder.setTimestamp(Instant.now());
     return embedBuilder.build();
   }
-
-  private String toTitleCase(String input) {
-    StringBuilder titleCase = new StringBuilder(input.length());
-    boolean nextTitleCase = true;
-
-    for (char c : input.toLowerCase().toCharArray()) {
-      if (Character.isSpaceChar(c)) {
-        nextTitleCase = true;
-      } else if (nextTitleCase) {
-        c = Character.toTitleCase(c);
-        nextTitleCase = false;
-      }
-      titleCase.append(c);
-    }
-
-    return titleCase.toString();
-  }
-
 
 }
