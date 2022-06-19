@@ -47,7 +47,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.utils.AttachmentOption;
 import org.jetbrains.annotations.NotNull;
 
-public class Leave implements Command {
+public class Leave implements Command { // TODO: Handle allied victory state
 
   private final Settings settings;
 
