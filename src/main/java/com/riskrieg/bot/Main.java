@@ -31,7 +31,6 @@ import com.riskrieg.bot.command.commands.riskrieg.restricted.owner.AdjustMap;
 import com.riskrieg.bot.command.commands.riskrieg.restricted.server.End;
 import com.riskrieg.bot.command.commands.riskrieg.restricted.server.Kick;
 import com.riskrieg.bot.command.commands.riskrieg.running.ClaimCommand;
-import com.riskrieg.bot.command.commands.riskrieg.running.Palette;
 import com.riskrieg.bot.command.commands.riskrieg.running.Skip;
 import com.riskrieg.bot.command.commands.riskrieg.running.Stats;
 import com.riskrieg.bot.command.commands.riskrieg.running.Turn;
@@ -82,7 +81,7 @@ public class Main { // TODO: Add command that lets you see a territory's neighbo
           new ClaimCommand(),
           new Skip(),
           new Turn(),
-          new Palette(),
+//          new Palette(), // TODO: Re-enable this when cache is implemented
 
           new Stats(),
 
