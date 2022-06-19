@@ -43,7 +43,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import org.jetbrains.annotations.NotNull;
 
-public class Stats implements Command {
+public class Stats implements Command { // TODO: Add ally count
 
   private final Settings settings;
 
