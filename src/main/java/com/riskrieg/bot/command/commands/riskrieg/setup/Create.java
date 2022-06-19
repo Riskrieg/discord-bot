@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -83,8 +85,8 @@ public class Create implements Command {
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
         .addOptions(OptionDataUtil.modes().setRequired(true), OptionDataUtil.palettes().setRequired(false))
-        .addOption(OptionType.ATTACHMENT, "custom", "Provide your own palette file.", false)
-        .addOption(OptionType.BOOLEAN, "enable-alliances", "Whether or not to enable alliances.", false);
+//        .addOption(OptionType.ATTACHMENT, "custom", "Provide your own palette file.", false) // TODO: Re-enable this when cache is implemented
+        .addOption(OptionType.STRING, "features", "List the features you would like to enable.", false);
   }
 
   @Override
@@ -116,20 +118,21 @@ public class Create implements Command {
         return;
       }
 
-      final FeatureFlag alliances;
-      OptionMapping alliancesOpt = event.getOption("enable-alliances");
-      if (alliancesOpt != null && alliancesOpt.getAsBoolean()) {
-        alliances = new FeatureFlag(Feature.ALLIANCES, true);
+      OptionMapping featuresOpt = event.getOption("features");
+      final FeatureFlag[] featureFlags;
+      if (featuresOpt != null) {
+        String featuresString = featuresOpt.getAsString();
+        featureFlags = ParseUtil.parseFeatures(featuresString);
       } else {
-        alliances = new FeatureFlag(Feature.ALLIANCES, false);
+        featureFlags = new FeatureFlag[0];
       }
 
       // Command execution
       Riskrieg api = RiskriegBuilder.createLocal(Path.of(BotConstants.REPOSITORY_PATH)).build();
       api.createGroup(GroupIdentifier.of(guild.getId()))
-          .queue(group -> group.createGame(GameConstants.standard().clampTo(palette), palette, GameIdentifier.of(event.getChannel().getId()), mode, alliances).queue(game -> {
+          .queue(group -> group.createGame(GameConstants.standard().clampTo(palette), palette, GameIdentifier.of(event.getChannel().getId()), mode, featureFlags).queue(game -> {
                 hook.sendMessage(genericSuccess).queue(success -> {
-                  hook.sendMessageEmbeds(createMessage(event.getMember(), modeStr, palette.name(), alliances))
+                  hook.sendMessageEmbeds(createMessage(event.getMember(), modeStr, palette.name(), featureFlags))
                       .addFile(generateColorChoices(game.palette()), "color-choices.png", new AttachmentOption[0])
                       .queue();
                 });
@@ -157,21 +160,29 @@ public class Create implements Command {
     return palette;
   }
 
-  private MessageEmbed createMessage(Member creator, String modeString, String paletteName, FeatureFlag alliances) {
+  private MessageEmbed createMessage(Member creator, String modeString, String paletteName, FeatureFlag[] featureFlags) {
     EmbedBuilder embedBuilder = new EmbedBuilder();
     embedBuilder.setColor(settings.embedColor());
     embedBuilder.setTitle("Join Game");
     embedBuilder.setImage("attachment://color-choices.png");
+
+    String featuresString = "Features: " + (featureFlags.length == 0 ? "*None*" : Arrays.stream(featureFlags)
+        .filter(FeatureFlag::enabled)
+        .map(FeatureFlag::feature)
+        .map(Feature::name)
+        .map(name -> "**" + StringUtil.toTitleCase(name) + "**")
+        .collect(Collectors.joining(", ")).trim());
+
     if (creator != null) {
       embedBuilder.setDescription("Creator: " + creator.getAsMention()
           + "\nMode: **" + StringUtil.toTitleCase(modeString) + "**"
           + "\nPalette: **" + paletteName + "**"
-          + "\nAlliances: **" + (alliances.enabled() ? "enabled" : "disabled") + "**");
+          + "\n" + featuresString);
     } else {
       embedBuilder.setDescription("Creator: Unknown"
           + "\nMode: **" + StringUtil.toTitleCase(modeString) + "**"
           + "\nPalette: **" + paletteName + "**"
-          + "\nAlliances: **" + (alliances.enabled() ? "enabled" : "disabled") + "**");
+          + "\n" + featuresString);
     }
     embedBuilder.setFooter("Please select a color to join the game. You may also choose a map at any time before starting the game.");
     return embedBuilder.build();

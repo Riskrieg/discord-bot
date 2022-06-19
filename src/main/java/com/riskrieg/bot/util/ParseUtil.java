@@ -19,6 +19,8 @@
 package com.riskrieg.bot.util;
 
 import com.riskrieg.core.api.game.Game;
+import com.riskrieg.core.api.game.feature.Feature;
+import com.riskrieg.core.api.game.feature.FeatureFlag;
 import com.riskrieg.core.api.game.mode.Conquest;
 import com.riskrieg.map.metadata.Alignment;
 import com.riskrieg.map.metadata.Availability;
@@ -29,6 +31,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,6 +54,34 @@ public class ParseUtil {
       case "conquest" -> Conquest.class; // TODO: Add other modes
       default -> Conquest.class;
     };
+  }
+
+  @NonNull
+  public static FeatureFlag[] parseFeatures(String featuresString) {
+    if (featuresString == null || featuresString.isBlank()) {
+      return new FeatureFlag[0];
+    }
+
+    Set<FeatureFlag> featureFlagSet = new HashSet<>();
+
+    String[] featuresToParse = featuresString.split("[\s,|/\\\\]+");
+    for (String featureName : featuresToParse) {
+      Feature parsedFeature = null;
+
+      int lowestDistance = Integer.MAX_VALUE;
+      for (Feature feature : Feature.values()) {
+        int distance = LevenshteinDistance.getDefaultInstance().apply(featureName.toLowerCase(), feature.name().toLowerCase());
+        if (distance < 3 && distance < lowestDistance) {
+          lowestDistance = distance;
+          parsedFeature = feature;
+        }
+      }
+
+      if (parsedFeature != null) {
+        featureFlagSet.add(new FeatureFlag(parsedFeature, true));
+      }
+    }
+    return featureFlagSet.toArray(FeatureFlag[]::new);
   }
 
   @NonNull
