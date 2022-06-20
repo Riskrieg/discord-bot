@@ -42,8 +42,6 @@ public class BotConstants {
   public static final String SAVE_PATH = REPOSITORY_PATH + "saves/";
   public static final String MAP_PATH = REPOSITORY_PATH + "maps/";
   public static final String MAP_OPTIONS_PATH = MAP_PATH + "options/";
-  @Deprecated
-  public static final String COLORS_PATH = "res/colors/";
 
   /* Riskrieg Image Resources */
   public static final String COLOR_CHOICES_BLANK = "res/images/color-choices-blank.png";
