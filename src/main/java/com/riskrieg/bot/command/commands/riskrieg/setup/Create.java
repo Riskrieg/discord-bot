@@ -85,7 +85,8 @@ public class Create implements Command {
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
         .addOptions(OptionDataUtil.modes().setRequired(true), OptionDataUtil.palettes().setRequired(false))
-//        .addOption(OptionType.ATTACHMENT, "custom", "Provide your own palette file.", false) // TODO: Re-enable this when cache is implemented
+        // TODO: Palettes are saved in save file, so don't need cache for them, re-enable with better command syntax
+//        .addOption(OptionType.ATTACHMENT, "custom", "Provide your own palette file.", false)
         .addOption(OptionType.STRING, "features", "List the features you would like to enable.", false);
   }
 

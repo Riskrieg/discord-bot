@@ -81,7 +81,7 @@ public class Main { // TODO: Add command that lets you see a territory's neighbo
           new ClaimCommand(),
           new Skip(),
           new Turn(),
-//          new Palette(), // TODO: Re-enable this when cache is implemented
+//          new Palette(), // TODO: Palettes are saved in save file, so don't need cache for them, re-enable with better command syntax
 
           new Stats(),
 
