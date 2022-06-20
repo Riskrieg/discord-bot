@@ -48,7 +48,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.utils.AttachmentOption;
 import org.jetbrains.annotations.NotNull;
 
-public class Leave implements Command { // TODO: Handle allied victory state
+public class Leave implements Command {
 
   private final Settings settings;
 
@@ -142,6 +142,7 @@ public class Leave implements Command { // TODO: Handle allied victory state
                           case DEFEAT ->
                               description.append("**").append(currentPlayer.isPresent() ? currentPlayer.get().name() : "The remaining player").append("** has won the game!");
                           case STALEMATE -> description.append("A stalemate has been reached! The game is now over.");
+                          case ALLIED_VICTORY -> description.append("Allied victory! The remaining players have won the game.");
                           default -> description.append("The game is now over.");
                         }
                         embedBuilder.addField("Game Ended", description.toString(), false);
