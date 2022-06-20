@@ -21,7 +21,9 @@ package com.riskrieg.bot.util;
 import com.riskrieg.core.api.game.Game;
 import com.riskrieg.core.api.game.feature.Feature;
 import com.riskrieg.core.api.game.feature.FeatureFlag;
+import com.riskrieg.core.api.game.mode.Brawl;
 import com.riskrieg.core.api.game.mode.Conquest;
+import com.riskrieg.core.api.game.mode.Regicide;
 import com.riskrieg.map.metadata.Alignment;
 import com.riskrieg.map.metadata.Availability;
 import com.riskrieg.map.metadata.Flavor;
@@ -52,6 +54,8 @@ public class ParseUtil {
   public static Class<? extends Game> parseGameMode(String mode) {
     return switch (mode.toLowerCase()) {
       case "conquest" -> Conquest.class; // TODO: Add other modes
+      case "regicide" -> Regicide.class;
+      case "brawl" -> Brawl.class;
       default -> Conquest.class;
     };
   }

@@ -28,7 +28,6 @@ public class OptionDataUtil {
 
   public static OptionData modes() {
     return new OptionData(OptionType.STRING, "mode", "Select a game mode.")
-//        .addChoice("Classic", "classic")
         .addChoice("Conquest", "conquest")
         .addChoice("Regicide", "regicide")
         .addChoice("Brawl", "brawl")
