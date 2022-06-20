@@ -32,6 +32,7 @@ import com.riskrieg.core.api.game.EndReason;
 import com.riskrieg.core.api.game.GamePhase;
 import com.riskrieg.core.api.game.entity.nation.Nation;
 import com.riskrieg.core.api.game.entity.player.Player;
+import com.riskrieg.core.api.game.mode.Brawl;
 import com.riskrieg.core.api.identifier.GameIdentifier;
 import com.riskrieg.core.api.identifier.GroupIdentifier;
 import com.riskrieg.palette.RkpColor;
@@ -135,8 +136,13 @@ public class Kick implements Command {
                               Optional<Nation> optCurrent = game.getNation(currentPlayer.get().identifier());
                               String claimStr = "They may claim an unknown amount of territories this turn.";
                               if (optCurrent.isPresent()) {
-                                long allowedClaimAmount = optCurrent.get()
-                                    .getAllowedClaimAmount(game.claims(), game.constants(), game.map(), game.getAllies(optCurrent.get().identifier()));
+                                long allowedClaimAmount;
+                                if (game.getClass() == Brawl.class && game.claims().size() != game.map().vertices().size()) {
+                                  allowedClaimAmount = 1;
+                                } else {
+                                  allowedClaimAmount = optCurrent.get()
+                                      .getAllowedClaimAmount(game.claims(), game.constants(), game.map(), game.getAllies(optCurrent.get().identifier()));
+                                }
                                 claimStr = "They may claim " + allowedClaimAmount + " " + (allowedClaimAmount == 1 ? "territory" : "territories") + " this turn.";
                               }
                               embedBuilder.setFooter("It is " + currentPlayer.get().name() + "'s turn. " + claimStr);

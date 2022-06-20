@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.riskrieg:core:3.0.0-12.2206-alpha")
+    implementation("com.riskrieg:core:3.0.0-0.2206-beta")
     implementation("com.riskrieg:map:1.0.0-2.2206")
     implementation("com.riskrieg:palette:1.1.0-1.2206")
     implementation("com.riskrieg:codec:1.0.0-3.2206")
