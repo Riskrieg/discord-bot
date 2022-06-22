@@ -53,7 +53,7 @@ public class ParseUtil {
   @NonNull
   public static Class<? extends Game> parseGameMode(String mode) {
     return switch (mode.toLowerCase()) {
-      case "conquest" -> Conquest.class; // TODO: Add other modes
+      case "conquest" -> Conquest.class; // TODO: Add creative mode
       case "regicide" -> Regicide.class;
       case "brawl" -> Brawl.class;
       default -> Conquest.class;
