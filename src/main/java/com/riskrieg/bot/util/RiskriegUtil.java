@@ -73,7 +73,8 @@ public class RiskriegUtil {
       RkmMetadata metadata = RkJsonUtil.read(Path.of(BotConstants.MAP_OPTIONS_PATH + game.map().codename() + ".json"), RkmMetadata.class);
 
       GameView.drawTerritoryNames(baseImage, game.map().textLayer());
-      GameView.drawPlayerUI(baseImage, metadata.alignment(), game.map().displayName(), game.map().codename(), game.players(), game.nations(), game.palette());
+
+      GameView.drawDynamicGameUI(baseImage, metadata, game.palette(), game.map().displayName(), game.players(), game.nations());
 
       return baseImage;
     } catch (Exception e) {

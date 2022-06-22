@@ -18,27 +18,22 @@
 
 package com.riskrieg.bot.util.view;
 
-import com.riskrieg.bot.BotConstants;
 import com.riskrieg.bot.util.ImageUtil;
 import com.riskrieg.core.api.game.entity.nation.Nation;
 import com.riskrieg.core.api.game.entity.player.Player;
-import com.riskrieg.core.util.io.RkJsonUtil;
 import com.riskrieg.map.RkmMetadata;
-import com.riskrieg.map.metadata.Alignment;
 import com.riskrieg.palette.RkpColor;
 import com.riskrieg.palette.RkpPalette;
+import io.github.aaronjyoder.fill.Filler;
+import io.github.aaronjyoder.fill.recursive.BlockFiller;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
-import javax.imageio.ImageIO;
 
 public class GameView {
 
@@ -52,131 +47,191 @@ public class GameView {
     g.dispose();
   }
 
-  public static void drawPlayerUI(BufferedImage mapImage, Alignment alignment, String mapTitle, String mapName,
-      Collection<Player> players, Collection<Nation> nations, RkpPalette palette) throws IOException { // TODO: Support anywhere from 2-16 colors
-    final int marginSide = 10;
-    final int marginTopBottom = 10;
-    final int marginBetween = 2;
-    int borderThickness = 3;
-    int marginNameSide = 4;
+  public static void drawDynamicGameUI(BufferedImage mapImage, RkmMetadata metadata, RkpPalette palette, String mapTitle,
+      Collection<Player> players, Collection<Nation> nations) {
+    // General UI (Pixels)
+    final int edgeMargin = 10;
+    final int borderThickness = 3;
 
-    int titleHeight = 32;
-    int titleBuffer = 4;
+    // Color List UI (Pixels)
+    final int colorItemWidth = 92;
 
-    final BufferedImage imageColorList = ImageIO.read(new File(BotConstants.COLOR_CHOICES_VERTICAL_BLANK));
-    final BufferedImage imagePlayerNameRegion = ImageIO.read(new File(BotConstants.PLAYER_NAME_BACKGROUND));
+    // Player List UI
+    final int nameEdgeMargin = 4; // Margin from the edge for either side of the name (not included in width calculations; only for text drawing purposes)
+    final int nameItemWidth = 194;
 
-    Graphics g = mapImage.getGraphics();
-    Point pointColorList = new Point(0, 0);
-    Point pointPlayerNameRegion = new Point(0, 0);
-
-    Point pointPlayerRectTopLeft = new Point(0, 0);
-    Point pointPlayerRectBottomRight = new Point(0, 0);
-    switch (alignment.horizontal()) {
-      case LEFT -> {
-        pointColorList.setLocation(marginSide, pointColorList.y);
-        pointPlayerNameRegion.setLocation(pointColorList.x + imageColorList.getWidth() + marginBetween, pointPlayerNameRegion.y);
-      }
-      case CENTER -> {
-        pointColorList.setLocation(mapImage.getWidth() / 2 - imageColorList.getWidth() / 2 - imagePlayerNameRegion.getWidth() / 2 - marginBetween / 2, pointColorList.y);
-        pointPlayerNameRegion.setLocation(mapImage.getWidth() / 2 - imagePlayerNameRegion.getWidth() / 2 + imageColorList.getWidth() / 2 + marginBetween / 2,
-            pointPlayerNameRegion.y);
-      }
-      case RIGHT -> {
-        pointColorList.setLocation(mapImage.getWidth() - imageColorList.getWidth() - marginSide, pointColorList.y);
-        pointPlayerNameRegion.setLocation(pointColorList.x - marginBetween - imagePlayerNameRegion.getWidth(), pointPlayerNameRegion.y);
-      }
+    // Other
+    final int itemHeight = 28; // Used for both colorItem and nameItem height since they should always match
+    final int dividerWidth = 2;
+    final int titleHeight;
+    if (metadata.autogenTitle()) {
+      titleHeight = 32;
+    } else {
+      titleHeight = 0;
     }
 
-    pointPlayerRectTopLeft.setLocation(pointPlayerNameRegion.x + borderThickness + marginNameSide, pointPlayerRectTopLeft.y);
-    pointPlayerRectBottomRight.setLocation(pointPlayerRectTopLeft.x + (imagePlayerNameRegion.getWidth() - marginNameSide * 2 - borderThickness * 2 - 1),
-        pointPlayerRectBottomRight.y); // Have to subtract 1 because one edge is exclusive
+    // Parameters
+    final int colorListWidth = colorItemWidth + 2 * borderThickness;
+    final int nameListWidth = nameItemWidth + 2 * borderThickness;
+    final int listHeight = borderThickness + (itemHeight + borderThickness) * palette.size(); // Same height for both lists since they should always match
 
-    switch (alignment.vertical()) {
-      case TOP -> {
-        pointColorList.setLocation(pointColorList.x, marginTopBottom + titleBuffer * 2 + titleHeight);
-        pointPlayerNameRegion.setLocation(pointPlayerNameRegion.x, marginTopBottom + titleBuffer * 2 + titleHeight);
-      }
-      case MIDDLE -> {
-        pointColorList.setLocation(pointColorList.x, mapImage.getHeight() / 2 - imageColorList.getHeight() / 2);
-        pointPlayerNameRegion.setLocation(pointPlayerNameRegion.x, mapImage.getHeight() / 2 - imagePlayerNameRegion.getHeight() / 2);
-      }
-      case BOTTOM -> {
-        pointColorList.setLocation(pointColorList.x, mapImage.getHeight() - imageColorList.getHeight() - marginTopBottom);
-        pointPlayerNameRegion.setLocation(pointPlayerNameRegion.x, mapImage.getHeight() - imagePlayerNameRegion.getHeight() - marginTopBottom);
-      }
-    }
+    /* Draw color list */
+    BufferedImage colorListImage = new BufferedImage(colorListWidth, listHeight, BufferedImage.TYPE_INT_ARGB);
+    ImageUtil.fillTransparent(colorListImage);
 
-    // Draw imageColorList
-    Graphics icGraphics = mapImage.getGraphics();
-    icGraphics.drawImage(imageColorList, pointColorList.x, pointColorList.y, null);
-    icGraphics.dispose();
-    // Draw colors and text
-    int startX = pointColorList.x + 3;
-    int startY = pointColorList.y + 3;
-    int vBuffer = 0;
-    int hBuffer = 3;
-    int jumpY = 31;
+    // Draw border
+    drawBorder(colorListImage, palette.borderColor().toAwtColor(), borderThickness + 2); // Need a thickness of 5 to get 3px thickness for some reason
+    drawRoundedCornerManually(colorListImage);
 
+    // Draw dividers, add colors, add color names
+    Graphics2D g = colorListImage.createGraphics();
+
+    g.setColor(palette.borderColor().toAwtColor());
+    g.setStroke(new BasicStroke(borderThickness));
+    int x = borderThickness;
+    int y;
     for (RkpColor color : palette.sortedColorSet()) {
-      // Fill in the player color
-      Graphics pcGraphics = mapImage.getGraphics();
-      Color prev = pcGraphics.getColor();
-      pcGraphics.setColor(color.toAwtColor());
-      pcGraphics.fillRect(startX, startY, 92, 28);
-      pcGraphics.setColor(prev);
-      pcGraphics.dispose();
+      int i = color.order(); // Should always start at 0 and go sequentially by 1 from there
+      y = (i + 1) * (itemHeight + borderThickness) + 1; // Set y right away so that every fill operation fills in the same number of pixels
+
+      // Draw divider
+      g.drawLine(x, y, x + colorItemWidth - 1, y);
+
+      // Fill color
+      Filler filler = new BlockFiller(colorListImage);
+      filler.fill(borderThickness, borderThickness + (i * (itemHeight + borderThickness)), color.toAwtColor());
 
       // Draw color name
-      Graphics cnGraphics = mapImage.getGraphics();
-      ImageUtil.paintTextWithBounds((Graphics2D) cnGraphics, color.name().toUpperCase(), RkpPalette.DEFAULT_TEXT_COLOR.toAwtColor(),
-          startX + hBuffer, startY + 3, startX + 91 - hBuffer, startY + 27 - vBuffer,
-          false, true, new Font("Raleway", Font.BOLD, 15), new Font("Noto Mono", Font.BOLD, 15), 12.0F, 15.0F);
-      cnGraphics.dispose();
-      // Move to next square down
-      startY += jumpY;
+      int x1 = borderThickness;
+      int y1 = borderThickness + i * (itemHeight + borderThickness);
+      int x2 = x1 + colorItemWidth - 1;
+      int y2 = y1 + itemHeight - 1;
+      ImageUtil.drawTextWithBounds(colorListImage, color.name().toUpperCase(), RkpPalette.DEFAULT_TEXT_COLOR.toAwtColor(),
+          x1, y1, x2, y2, false, true,
+          new Font("Raleway", Font.BOLD, 15), new Font("Noto Mono", Font.BOLD, 15), 12.0F, 15.0F);
     }
 
-    g.drawImage(imagePlayerNameRegion, pointPlayerNameRegion.x, pointPlayerNameRegion.y, null);
     g.dispose();
 
-    RkmMetadata currentMetadata = RkJsonUtil.read(Path.of(BotConstants.MAP_OPTIONS_PATH + mapName + ".json"), RkmMetadata.class);
-    if (currentMetadata != null && currentMetadata.autogenTitle()) {
-      Point mapTitleTopLeft = new Point(5, pointColorList.y - titleBuffer - titleHeight);
-      if (alignment.horizontal().equals(Alignment.Horizontal.RIGHT)) {
-        mapTitleTopLeft.setLocation(pointPlayerNameRegion.x, mapTitleTopLeft.y);
-      } else {
-        mapTitleTopLeft.setLocation(pointColorList.x, mapTitleTopLeft.y);
-      }
+    /* Draw player name list */
+    BufferedImage nameListImage = new BufferedImage(nameListWidth, listHeight, BufferedImage.TYPE_INT_ARGB);
+    ImageUtil.fillTransparent(nameListImage);
 
-      Graphics tGraphics = mapImage.getGraphics();
-      ImageUtil.paintTextWithBounds((Graphics2D) tGraphics, "\u2014" + " " + mapTitle + " " + "\u2014", RkpPalette.DEFAULT_TEXT_COLOR.toAwtColor(),
-          mapTitleTopLeft.x, mapTitleTopLeft.y,
-          mapTitleTopLeft.x + (imageColorList.getWidth() + marginBetween + imagePlayerNameRegion.getWidth() - 1),
-          mapTitleTopLeft.y - titleBuffer - titleHeight,
-          false, true, new Font("Spectral", Font.PLAIN, 21), new Font("Noto Serif", Font.PLAIN, 21));
-      tGraphics.dispose();
-    }
+    // Draw border
+    drawBorder(nameListImage, palette.borderColor().toAwtColor(), borderThickness + 2); // Need a thickness of 5 to get 3px thickness for some reason
+    drawRoundedCornerManually(nameListImage);
 
-    int colorCellHeight = (imageColorList.getHeight() - (palette.size() + 1) * borderThickness) / palette.size();
-    pointPlayerRectTopLeft.setLocation(pointPlayerRectTopLeft.x, pointPlayerNameRegion.y + borderThickness);
-    pointPlayerRectBottomRight.setLocation(pointPlayerRectBottomRight.x, pointPlayerRectTopLeft.y + colorCellHeight - 1); // Subtract 1 because one edge is exclusive
+    // Fill inside with transparent black background
+    Color transparentBlack = new Color(0, 0, 0, 175);
+    Filler filler = new BlockFiller(nameListImage);
+    filler.fill(borderThickness, borderThickness, transparentBlack);
 
-    int nameRectHeight = pointPlayerRectBottomRight.y - pointPlayerRectTopLeft.y;
+    /* Draw player names */
+    boolean rightAlignNames = switch (metadata.alignment().horizontal()) {
+      case LEFT, CENTER -> false;
+      case RIGHT -> true;
+    };
 
+    Graphics2D nmlGraphics = nameListImage.createGraphics();
     for (Nation nation : nations) {
       Optional<Player> player = players.stream().filter(p -> p.identifier().equals(nation.leaderIdentifier())).findFirst();
-      Graphics pGraphics = mapImage.getGraphics();
-      int currentTopLeftY = pointPlayerRectTopLeft.y + ((colorCellHeight + borderThickness) * nation.colorId());
-      ImageUtil.paintTextWithBounds((Graphics2D) pGraphics, player.isPresent() ? player.get().name() : "[Unknown]",
-          palette.get(nation.colorId()).orElse(palette.last()).toAwtColor(), pointPlayerRectTopLeft.x, currentTopLeftY,
-          pointPlayerRectBottomRight.x, currentTopLeftY + (nameRectHeight), alignment.horizontal().equals(Alignment.Horizontal.RIGHT), false,
-          new Font("Open Sans", Font.PLAIN, 26), new Font("Noto Sans", Font.PLAIN, 26));
-      pGraphics.dispose();
+      RkpColor color = palette.get(nation.colorId()).orElse(palette.last());
+
+      int x1 = nameEdgeMargin + borderThickness;
+      int y1 = borderThickness + color.order() * (itemHeight + borderThickness);
+      int x2 = x1 + nameItemWidth - 1 - (nameEdgeMargin * 2);
+      int y2 = y1 + itemHeight - 1;
+
+      ImageUtil.drawTextWithBounds(nameListImage, player.isPresent() ? player.get().name() : "[Unknown]", color.toAwtColor(),
+          x1, y1, x2, y2, rightAlignNames, false,
+          new Font("Open Sans", Font.PLAIN, 26), new Font("Noto Sans", Font.PLAIN, 26), 14.0F, 26.0F);
+    }
+    nmlGraphics.dispose();
+
+    /* Combine and draw map title */
+    BufferedImage combinedImage = new BufferedImage(colorListWidth + dividerWidth + nameListWidth, listHeight + titleHeight, BufferedImage.TYPE_INT_ARGB);
+    ImageUtil.fillTransparent(combinedImage);
+
+    if (metadata.autogenTitle()) {
+      ImageUtil.drawTextWithBounds(combinedImage, "\u2014" + " " + mapTitle + " " + "\u2014", RkpPalette.DEFAULT_TEXT_COLOR.toAwtColor(),
+          0, 0, combinedImage.getWidth() - 1, titleHeight - 1, false, true,
+          new Font("Spectral", Font.PLAIN, 21), new Font("Noto Serif", Font.PLAIN, 21), 14.0F, 26.0F);
     }
 
-    g.dispose();
+    switch (metadata.alignment().horizontal()) {
+      case LEFT, CENTER -> { // Draw color list on left
+        Graphics2D cmbGraphics = combinedImage.createGraphics();
+        cmbGraphics.drawImage(colorListImage, 0, titleHeight, colorListWidth, listHeight, null);
+        cmbGraphics.drawImage(nameListImage, colorListWidth + dividerWidth, titleHeight, nameListWidth, listHeight, null);
+        cmbGraphics.dispose();
+      }
+      case RIGHT -> { // Draw color list on right
+        Graphics2D cmbGraphics = combinedImage.createGraphics();
+        cmbGraphics.drawImage(nameListImage, 0, titleHeight, nameListWidth, listHeight, null);
+        cmbGraphics.drawImage(colorListImage, nameListWidth + dividerWidth, titleHeight, colorListWidth, listHeight, null);
+        cmbGraphics.dispose();
+      }
+    }
+
+    // Draw combined image on top of map image
+    int mapX = switch (metadata.alignment().horizontal()) {
+      case LEFT -> edgeMargin;
+      case CENTER -> mapImage.getWidth() / 2 - combinedImage.getWidth() / 2;
+      case RIGHT -> mapImage.getWidth() - combinedImage.getWidth() - edgeMargin;
+    };
+
+    int mapY = switch (metadata.alignment().vertical()) {
+      case TOP -> edgeMargin;
+      case MIDDLE -> mapImage.getHeight() / 2 - combinedImage.getHeight() / 2;
+      case BOTTOM -> mapImage.getHeight() - combinedImage.getHeight() - edgeMargin;
+    };
+
+    Graphics2D mapGraphics = mapImage.createGraphics();
+    mapGraphics.drawImage(combinedImage, mapX, mapY, combinedImage.getWidth(), combinedImage.getHeight(), null);
+    mapGraphics.dispose();
   }
 
+  private static void drawBorder(BufferedImage image, Color color, int thickness) {
+    int borderAdjustment = 1;
+    if (thickness % 2 == 0) {
+      borderAdjustment = 0;
+    }
+    int width = image.getWidth();
+    int height = image.getHeight();
+
+    Graphics2D g2d = image.createGraphics();
+    g2d.setColor(color);
+    g2d.setStroke(new BasicStroke(thickness));
+    g2d.drawLine(0, 0, 0, height);
+    g2d.drawLine(0, 0, width, 0);
+    g2d.drawLine(0, height - borderAdjustment, width, height - borderAdjustment);
+    g2d.drawLine(width - borderAdjustment, height - borderAdjustment, width - borderAdjustment, 0);
+    g2d.dispose();
+  }
+
+  private static void drawRoundedCornerManually(BufferedImage image) { // Only works for border thickness of 3px, just doing manually for now
+    int width = image.getWidth();
+    int height = image.getHeight();
+    int transparentRGB = new Color(0, 0, 0, 0).getRGB();
+    // Top left corner
+    image.setRGB(0, 0, transparentRGB);
+    image.setRGB(1, 0, transparentRGB);
+    image.setRGB(0, 1, transparentRGB);
+
+    // Bottom left corner
+    image.setRGB(0, height - 1, transparentRGB);
+    image.setRGB(1, height - 1, transparentRGB);
+    image.setRGB(0, height - 2, transparentRGB);
+
+    // Top right corner
+    image.setRGB(width - 1, 0, transparentRGB);
+    image.setRGB(width - 2, 0, transparentRGB);
+    image.setRGB(width - 1, 1, transparentRGB);
+
+    // Bottom right corner
+    image.setRGB(width - 1, height - 1, transparentRGB);
+    image.setRGB(width - 2, height - 1, transparentRGB);
+    image.setRGB(width - 1, height - 2, transparentRGB);
+  }
 
 }
