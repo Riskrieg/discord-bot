@@ -44,10 +44,7 @@ public class BotConstants {
   public static final String MAP_OPTIONS_PATH = MAP_PATH + "options/";
 
   /* Riskrieg Image Resources */
-  public static final String COLOR_CHOICES_BLANK = "res/images/color-choices-blank.png";
-  public static final String COLOR_CHOICES_VERTICAL_BLANK = "res/images/color-choices-vertical-blank.png";
   public static final String SKULL_IMAGE = "res/images/skull.png";
-  public static final String PLAYER_NAME_BACKGROUND = "res/images/player-name-background.png";
 
   /* Emoji */
   public static final String BULLET_POINT_EMOJI = " :white_small_square: ";
