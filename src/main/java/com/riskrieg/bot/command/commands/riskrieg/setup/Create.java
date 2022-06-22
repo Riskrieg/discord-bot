@@ -85,8 +85,7 @@ public class Create implements Command {
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
         .addOptions(OptionDataUtil.modes().setRequired(true), OptionDataUtil.palettes().setRequired(false))
-        // TODO: Palettes are saved in save file, so don't need cache for them, re-enable with better command syntax after adding support for 2-16 colors to UI generation
-//        .addOption(OptionType.ATTACHMENT, "custom", "Provide your own palette file.", false)
+        .addOption(OptionType.ATTACHMENT, "file", "Provide your own palette file.", false)
         .addOption(OptionType.STRING, "features", "List the features you would like to enable.", false);
   }
 
@@ -112,12 +111,6 @@ public class Create implements Command {
       var mode = ParseUtil.parseGameMode(modeStr);
 
       final RkpPalette palette = getPalette(event);
-
-      // TODO: Palettes temporarily limited to strictly 16 colors until UI generation is updated to support 2-16
-      if (palette.size() != 16) {
-        hook.sendMessage(MessageUtil.error(settings, "Palettes must currently support exactly 16 colors. This will be updated in the future.")).queue();
-        return;
-      }
 
       OptionMapping featuresOpt = event.getOption("features");
       final FeatureFlag[] featureFlags;
@@ -150,7 +143,7 @@ public class Create implements Command {
       default -> RkpPalette.standard();
     };
 
-    OptionMapping paletteOverride = event.getOption("custom");
+    OptionMapping paletteOverride = event.getOption("file");
     if (paletteOverride != null) {
       try {
         palette = new RkpDecoder().decode(new URL(paletteOverride.getAsAttachment().getUrl()));
