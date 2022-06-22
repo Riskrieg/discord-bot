@@ -37,19 +37,18 @@ import com.riskrieg.core.api.identifier.GameIdentifier;
 import com.riskrieg.core.api.identifier.GroupIdentifier;
 import com.riskrieg.palette.RkpColor;
 import com.riskrieg.palette.RkpPalette;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import io.github.aaronjyoder.fill.Filler;
+import io.github.aaronjyoder.fill.recursive.BlockFiller;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.imageio.ImageIO;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -127,7 +126,7 @@ public class Create implements Command {
           .queue(group -> group.createGame(GameConstants.standard().clampTo(palette), palette, GameIdentifier.of(event.getChannel().getId()), mode, featureFlags).queue(game -> {
                 hook.sendMessage(genericSuccess).queue(success -> {
                   hook.sendMessageEmbeds(createMessage(event.getMember(), modeStr, palette.name(), featureFlags))
-                      .addFile(generateColorChoices(game.palette()), "color-choices.png", new AttachmentOption[0])
+                      .addFile(generateDynamicColorChoices(game.palette()), "color-choices.png", new AttachmentOption[0])
                       .queue();
                 });
               }, failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue()
@@ -182,50 +181,103 @@ public class Create implements Command {
     return embedBuilder.build();
   }
 
-  @Nonnull
-  private byte[] generateColorChoices(RkpPalette palette) { // TODO: Rewrite to support between 2 and 16 colors, not just 16
-    try {
-      BufferedImage colorChoicesBlank = ImageIO.read(new File(BotConstants.COLOR_CHOICES_BLANK));
+  @NonNull
+  private byte[] generateDynamicColorChoices(RkpPalette palette) {
+    // General UI (Pixels)
+    final int borderThickness = 3;
 
-      BufferedImage colorChoicesResult = ImageUtil.createCopy(ImageUtil.convert(colorChoicesBlank, BufferedImage.TYPE_INT_ARGB));
+    // Color List UI (Pixels)
+    final int colorItemWidth = 92;
 
-      int startX = 3;
-      int startY = 3;
-      int column = 0;
-      int row = 0;
-      int vBuffer = 0;
-      int hBuffer = 3;
-      int jumpY = 31;
-      int jumpX = 95;
+    // Other
+    final int itemHeight = 28; // Used for both colorItem and nameItem height since they should always match
 
-      for (RkpColor color : palette.sortedColorSet()) {
-        // Fill in the player color
-        Graphics pcGraphics = colorChoicesResult.getGraphics();
-        Color prev = pcGraphics.getColor();
-        pcGraphics.setColor(color.toAwtColor());
-        pcGraphics.fillRect(startX + column * jumpX, startY + jumpY * row, 92, 28);
-        pcGraphics.setColor(prev);
-        pcGraphics.dispose();
+    // Parameters
+    final int colorListWidth = colorItemWidth + 2 * borderThickness;
+    final int listHeight = borderThickness + (itemHeight + borderThickness) * palette.size(); // Same height for both lists since they should always match
 
-        // Draw color name
-        Graphics cnGraphics = colorChoicesResult.getGraphics();
-        ImageUtil.paintTextWithBounds((Graphics2D) cnGraphics, color.name().toUpperCase(), RkpPalette.DEFAULT_TEXT_COLOR.toAwtColor(),
-            (startX + column * jumpX) + hBuffer, (startY + jumpY * row) + 3, (startX + column * jumpX) + 91 - hBuffer, (startY + jumpY * row) + 27 - vBuffer,
-            false, true, new Font("Raleway", Font.BOLD, 15), new Font("Noto Mono", Font.BOLD, 15), 12.0F, 15.0F);
-        cnGraphics.dispose();
-        // Move to next row, shift columns if necessary.
-        row++;
-        if (row % 8 == 0) {
-          row = 0;
-          column++;
-        }
-//        startY += jumpY;
-      }
+    /* Draw color list */
+    BufferedImage colorListImage = new BufferedImage(colorListWidth, listHeight, BufferedImage.TYPE_INT_ARGB);
+    ImageUtil.fillTransparent(colorListImage);
 
-      return ImageUtil.convertToByteArray(colorChoicesResult);
-    } catch (IOException e) {
-      return new byte[0];
+    // Draw border
+    drawBorder(colorListImage, palette.borderColor().toAwtColor(), borderThickness + 2); // Need a thickness of 5 to get 3px thickness for some reason
+    drawRoundedCornerManually(colorListImage);
+
+    // Draw dividers, add colors, add color names
+    Graphics2D g = colorListImage.createGraphics();
+
+    g.setColor(palette.borderColor().toAwtColor());
+    g.setStroke(new BasicStroke(borderThickness));
+    int x = borderThickness;
+    int y;
+    for (RkpColor color : palette.sortedColorSet()) {
+      int i = color.order(); // Should always start at 0 and go sequentially by 1 from there
+      y = (i + 1) * (itemHeight + borderThickness) + 1; // Set y right away so that every fill operation fills in the same number of pixels
+
+      // Draw divider
+      g.drawLine(x, y, x + colorItemWidth - 1, y);
+
+      // Fill color
+      Filler filler = new BlockFiller(colorListImage);
+      filler.fill(borderThickness, borderThickness + (i * (itemHeight + borderThickness)), color.toAwtColor());
+
+      // Draw color name
+      int x1 = borderThickness;
+      int y1 = borderThickness + i * (itemHeight + borderThickness);
+      int x2 = x1 + colorItemWidth - 1;
+      int y2 = y1 + itemHeight - 1;
+      ImageUtil.drawTextWithBounds(colorListImage, color.name().toUpperCase(), RkpPalette.DEFAULT_TEXT_COLOR.toAwtColor(),
+          x1, y1, x2, y2, false, true,
+          new Font("Raleway", Font.BOLD, 15), new Font("Noto Mono", Font.BOLD, 15), 12.0F, 15.0F);
     }
+
+    g.dispose();
+
+    return ImageUtil.convertToByteArray(colorListImage);
+  }
+
+  private void drawBorder(BufferedImage image, Color color, int thickness) {
+    int borderAdjustment = 1;
+    if (thickness % 2 == 0) {
+      borderAdjustment = 0;
+    }
+    int width = image.getWidth();
+    int height = image.getHeight();
+
+    Graphics2D g2d = image.createGraphics();
+    g2d.setColor(color);
+    g2d.setStroke(new BasicStroke(thickness));
+    g2d.drawLine(0, 0, 0, height);
+    g2d.drawLine(0, 0, width, 0);
+    g2d.drawLine(0, height - borderAdjustment, width, height - borderAdjustment);
+    g2d.drawLine(width - borderAdjustment, height - borderAdjustment, width - borderAdjustment, 0);
+    g2d.dispose();
+  }
+
+  private void drawRoundedCornerManually(BufferedImage image) { // Only works for border thickness of 3px, just doing manually for now
+    int width = image.getWidth();
+    int height = image.getHeight();
+    int transparentRGB = new Color(0, 0, 0, 0).getRGB();
+    // Top left corner
+    image.setRGB(0, 0, transparentRGB);
+    image.setRGB(1, 0, transparentRGB);
+    image.setRGB(0, 1, transparentRGB);
+
+    // Bottom left corner
+    image.setRGB(0, height - 1, transparentRGB);
+    image.setRGB(1, height - 1, transparentRGB);
+    image.setRGB(0, height - 2, transparentRGB);
+
+    // Top right corner
+    image.setRGB(width - 1, 0, transparentRGB);
+    image.setRGB(width - 2, 0, transparentRGB);
+    image.setRGB(width - 1, 1, transparentRGB);
+
+    // Bottom right corner
+    image.setRGB(width - 1, height - 1, transparentRGB);
+    image.setRGB(width - 2, height - 1, transparentRGB);
+    image.setRGB(width - 1, height - 2, transparentRGB);
   }
 
 }
