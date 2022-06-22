@@ -127,16 +127,19 @@ public class Palette implements Command {
       return Optional.empty();
     }
 
-    RkpPalette palette = paletteOpt == null ? RkpPalette.standard() : switch (paletteOpt.getAsString().toLowerCase()) {
-      case "original" -> RkpPalette.original();
-      default -> RkpPalette.standard();
+    RkpPalette palette = paletteOpt == null ? RkpPalette.standard16() : switch (paletteOpt.getAsString().toLowerCase()) {
+      case "original" -> RkpPalette.original16();
+      case "desatur" -> RkpPalette.desatur8();
+      case "pollen" -> RkpPalette.pollen8();
+      case "gothic" -> RkpPalette.gothic6();
+      default -> RkpPalette.standard16();
     };
 
     if (paletteOverride != null) {
       try {
         palette = new RkpDecoder().decode(new URL(paletteOverride.getAsAttachment().getUrl()));
       } catch (Exception e) {
-        palette = RkpPalette.standard();
+        palette = RkpPalette.standard16();
       }
     }
     return Optional.of(palette);

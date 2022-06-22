@@ -36,8 +36,11 @@ public class OptionDataUtil {
 
   public static OptionData palettes() {
     OptionData palettes = new OptionData(OptionType.STRING, "palette", "Select a built-in palette.");
-    palettes.addChoice("Default", "default");
-    palettes.addChoice("Original", "original");
+    palettes.addChoice("Default-16", "default");
+    palettes.addChoice("Original-16", "original");
+    palettes.addChoice("Desatur-8", "desatur");
+    palettes.addChoice("Pollen-8", "pollen");
+    palettes.addChoice("Gothic-6", "gothic");
     return palettes;
   }
 
