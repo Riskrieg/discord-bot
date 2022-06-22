@@ -18,6 +18,7 @@
 
 package com.riskrieg.bot.util;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -72,6 +73,47 @@ public class ImageUtil {
     AttributedString textToDraw = createFallbackString(new String(text.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8), primary, fallback, colorEmojiFont);
 //    g2.setPaint(Color.PINK);
 //    g2.drawRect(boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height);
+    g2.setPaint(fillColor);
+    // No need to set g2.setFont() since we provide it to the AttributedString.
+    if (rightHanded) {
+      g2.drawString(textToDraw.getIterator(), (x + boundingRect.width) - metrics.stringWidth(text), y);
+    } else {
+      g2.drawString(textToDraw.getIterator(), x, y);
+    }
+    g2.dispose();
+  }
+
+  public static void drawTextWithBounds(BufferedImage image, String str, Color fillColor, int x1, int y1, int x2, int y2, boolean rightHanded, boolean center,
+      Font primary, Font fallback, float minFontSize, float maxFontSize) {
+    Graphics2D g2 = image.createGraphics();
+    String text = str;
+    if (str.isBlank()) {
+      text = "[Blank]";
+    }
+    Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints");
+    if (desktopHints != null) {
+      g2.setRenderingHints(desktopHints);
+    }
+
+    Font colorEmojiFont = new Font("Noto Color Emoji", Font.PLAIN, primary.getSize()); // Doesn't work :/
+
+    Rectangle boundingRect = new Rectangle(x1, y1, Math.abs(x2 - x1), Math.abs(y2 - y1));
+    float optimalFontSize = FontUtil.getOptimalSize(new String(text.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8), boundingRect, g2, minFontSize, maxFontSize);
+
+    primary = primary.deriveFont(optimalFontSize);
+    fallback = fallback.deriveFont(optimalFontSize);
+    colorEmojiFont = colorEmojiFont.deriveFont(optimalFontSize);
+
+    FontMetrics metrics = g2.getFontMetrics(primary); // Use primary font for this to keep it simple.
+    int x = boundingRect.x;
+    if (center) {
+      x = boundingRect.x + ((boundingRect.width - metrics.stringWidth(text)) / 2);
+    }
+    int y = boundingRect.y + ((boundingRect.height - metrics.getHeight()) / 2) + metrics.getAscent();
+
+    AttributedString textToDraw = createFallbackString(new String(text.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8), primary, fallback, colorEmojiFont);
+//    g2.setPaint(Color.PINK); // debug only
+//    g2.drawRect(boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height); // debug only
     g2.setPaint(fillColor);
     // No need to set g2.setFont() since we provide it to the AttributedString.
     if (rightHanded) {
@@ -155,6 +197,15 @@ public class ImageUtil {
     g2.drawImage(source, 0, 0, null);
     g2.dispose();
     return result;
+  }
+
+  public static void fillTransparent(BufferedImage image) {
+    Graphics2D g2d = image.createGraphics();
+    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR, 0.0f));
+    g2d.setColor(new Color(0, 0, 0, 0));
+    g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
+    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+    g2d.dispose();
   }
 
 }
