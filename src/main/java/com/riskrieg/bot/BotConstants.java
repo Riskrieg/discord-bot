@@ -30,7 +30,7 @@ public class BotConstants {
   public static final Color ERROR_COLOR = new Color(165, 15, 5);
   public static final Color SUCCESS_COLOR = new Color(15, 165, 5);
 
-  public static final String VERSION = "2.0.0-1.2206-beta";
+  public static final String VERSION = "2.0.0-2.2206-beta";
 
   /* Bot Paths */
   public static final String AUTH_PATH = "res/auth/";
