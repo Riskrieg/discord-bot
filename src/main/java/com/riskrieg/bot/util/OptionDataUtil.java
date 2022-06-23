@@ -64,10 +64,6 @@ public class OptionDataUtil {
     return flavor;
   }
 
-  public static OptionData mapUrl() {
-    return new OptionData(OptionType.STRING, "url", "A direct download link to the .rkm map file.");
-  }
-
   public static OptionData verticalAlignment() {
     OptionData verticalAlignment = new OptionData(OptionType.STRING, "vertical-align", "The vertical alignment of the game UI.");
     for (Alignment.Vertical va : Alignment.Vertical.values()) {

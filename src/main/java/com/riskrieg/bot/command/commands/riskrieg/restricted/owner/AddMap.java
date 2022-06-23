@@ -33,19 +33,16 @@ import com.riskrieg.map.RkmMetadata;
 import com.riskrieg.map.metadata.Alignment;
 import com.riskrieg.map.metadata.Availability;
 import com.riskrieg.map.metadata.Flavor;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.jetbrains.annotations.NotNull;
 
 public class AddMap implements Command {
@@ -69,29 +66,34 @@ public class AddMap implements Command {
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .addOptions(OptionDataUtil.mapUrl().setRequired(true), OptionDataUtil.verticalAlignment().setRequired(true), OptionDataUtil.horizontalAlignment().setRequired(true))
-        .addOption(OptionType.BOOLEAN, "overwrite", "Whether the map should be overwritten if it already exists.", false);
+        .addOptions(
+            new OptionData(OptionType.ATTACHMENT, "file", "A valid .rkm map file.", true),
+            OptionDataUtil.verticalAlignment().setRequired(true),
+            OptionDataUtil.horizontalAlignment().setRequired(true)
+        )
+        .addOption(OptionType.BOOLEAN, "overwrite", "Whether the map file should be overwritten if it already exists.",
+            false);
   }
 
   @Override
   public void execute(SlashCommandInteractionEvent event) {
     event.deferReply(true).queue(hook -> {
 
+      OptionMapping mapFileOpt = event.getOption("file");
       OptionMapping vAlignOpt = event.getOption("vertical-align");
       OptionMapping hAlignOpt = event.getOption("horizontal-align");
-      OptionMapping mapLinkOpt = event.getOption("url"); // TODO: Can add a file parameter now
       OptionMapping overwriteOpt = event.getOption("overwrite");
 
-      if (vAlignOpt != null && hAlignOpt != null && mapLinkOpt != null) {
+      if (vAlignOpt != null && hAlignOpt != null && mapFileOpt != null) {
         var vAlign = ParseUtil.parseVerticalAlignment(vAlignOpt.getAsString());
         var hAlign = ParseUtil.parseHorizontalAlignment(hAlignOpt.getAsString());
         boolean overwrite = overwriteOpt != null && overwriteOpt.getAsBoolean();
-        String mapLink = mapLinkOpt.getAsString();
 
         try {
-          RkmMap map = new RkmDecoder().decode(new URL(mapLink));
-          boolean optionsFileExistsLocally = ParseUtil.parseMapNameExact(Path.of(BotConstants.MAP_OPTIONS_PATH), map.codename()).isPresent();
-          if (optionsFileExistsLocally && !overwrite) {
+          RkmMap map = new RkmDecoder().decode(new URL(mapFileOpt.getAsAttachment().getUrl()));
+          boolean optionsExist = ParseUtil.parseMapNameExact(Path.of(BotConstants.MAP_OPTIONS_PATH), map.codename())
+              .isPresent();
+          if (optionsExist && !overwrite) {
             hook.sendMessage(MessageUtil.error(settings, "A map with that name already exists.")).queue();
             return;
           }
@@ -104,21 +106,16 @@ public class AddMap implements Command {
 
           Alignment alignment = new Alignment(vAlign, hAlign);
           RkmMetadata metadata = new RkmMetadata(Flavor.COMMUNITY, Availability.COMING_SOON, alignment);
-          RkJsonUtil.write(Path.of(BotConstants.MAP_OPTIONS_PATH + map.codename() + ".json"), RkmMetadata.class, metadata);
+          RkJsonUtil.write(Path.of(BotConstants.MAP_OPTIONS_PATH + map.codename() + ".json"), RkmMetadata.class,
+              metadata);
 
           hook.sendMessage(MessageUtil.success(settings, "Successfully added map: **" + map.displayName() + "**\n"
                   + "Overwritten: **" + overwrite + "**\n"
                   + "Flavor: **" + metadata.flavor().toString() + "**\n"
                   + "Availability: **" + metadata.availability().name() + "**\n"))
               .queue();
-        } catch (MalformedURLException e) {
-          hook.sendMessage(MessageUtil.error(settings, "Malformed URL.")).queue();
-        } catch (FileNotFoundException e) {
-          hook.sendMessage(MessageUtil.error(settings, "File not found.")).queue();
-        } catch (IOException e) {
-          hook.sendMessage(MessageUtil.error(settings, "Exception while writing map file.")).queue();
-        } catch (NoSuchAlgorithmException e) {
-          hook.sendMessage(MessageUtil.error(settings, "Error while writing checksum.")).queue();
+        } catch (Exception e) {
+          hook.sendMessage(MessageUtil.error(settings, "Invalid map file.")).queue();
         }
       } else {
         hook.sendMessage(MessageUtil.error(settings, "Invalid arguments.")).queue();
