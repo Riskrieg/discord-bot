@@ -30,8 +30,7 @@ public class OptionDataUtil {
     return new OptionData(OptionType.STRING, "mode", "Select a game mode.")
         .addChoice("Conquest", "conquest")
         .addChoice("Regicide", "regicide")
-        .addChoice("Brawl", "brawl")
-        .addChoice("Creative", "creative");
+        .addChoice("Brawl", "brawl");
   }
 
   public static OptionData palettes() {
