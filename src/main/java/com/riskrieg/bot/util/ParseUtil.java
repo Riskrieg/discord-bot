@@ -102,12 +102,12 @@ public class ParseUtil {
     return result;
   }
 
-  public static Optional<String> parseMapCodename(Path optionsPath, String requestedCodename) {
+  public static Optional<String> parseMapCodename(Path metadataPath, String requestedCodename) {
     if (requestedCodename == null || requestedCodename.isEmpty()) {
       return Optional.empty();
     }
 
-    try (var pathStream = Files.list(optionsPath)) {
+    try (var pathStream = Files.list(metadataPath)) {
       Set<String> allMapCodenames = pathStream.map(path -> path.getFileName().toString().split("\\.")[0].trim()).collect(Collectors.toSet());
 
       String closestCodename = null;
@@ -125,12 +125,12 @@ public class ParseUtil {
     }
   }
 
-  public static Optional<String> parseMapNameExact(Path optionsPath, String requestedName) {
+  public static Optional<String> parseMapNameExact(Path metadataPath, String requestedName) {
     if (requestedName == null || requestedName.isEmpty()) {
       return Optional.empty();
     }
 
-    try (var pathStream = Files.list(optionsPath)) {
+    try (var pathStream = Files.list(metadataPath)) {
       return pathStream.map(path -> path.getFileName().toString().split("\\.")[0]).filter(name -> name.equalsIgnoreCase(requestedName)).findAny();
     } catch (IOException e) {
       return Optional.empty();

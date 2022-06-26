@@ -178,12 +178,12 @@ public class Maps implements Command {
   private Set<MapBundle> loadMapBundles() {
     Set<MapBundle> result = new TreeSet<>();
 
-    try (var pathStream = Files.list(Path.of(BotConstants.MAP_OPTIONS_PATH))) {
+    try (var pathStream = Files.list(Path.of(BotConstants.MAP_METADATA_PATH))) {
       Set<String> allMapCodenames = pathStream.map(path -> path.getFileName().toString().split("\\.")[0].trim()).collect(Collectors.toSet());
 
       for (String codename : allMapCodenames) {
         RkmMap map = new RkmDecoder().decode(Path.of(BotConstants.MAP_PATH + codename + ".rkm"));
-        RkmMetadata metadata = RkJsonUtil.read(Path.of(BotConstants.MAP_OPTIONS_PATH + codename + ".json"), RkmMetadata.class);
+        RkmMetadata metadata = RkJsonUtil.read(Path.of(BotConstants.MAP_METADATA_PATH + codename + ".json"), RkmMetadata.class);
         if (metadata != null) {
           result.add(new MapBundle(map, metadata));
         }

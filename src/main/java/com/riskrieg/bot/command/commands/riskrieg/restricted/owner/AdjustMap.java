@@ -49,7 +49,7 @@ public class AdjustMap implements Command {
 
   public AdjustMap() {
     this.settings = new StandardSettings(
-        "Owner only. Set attributes in an existing map's options file.",
+        "Owner only. Set attributes in an existing map's metadata file.",
         "adjustmap")
         .withColor(BotConstants.MOD_CMD_COLOR)
         .makeOwnerOnly();
@@ -110,13 +110,13 @@ public class AdjustMap implements Command {
 
           Alignment alignment = new Alignment(vAlign, hAlign);
           try {
-            RkmMetadata currentMetadata = RkJsonUtil.read(Path.of(BotConstants.MAP_OPTIONS_PATH + map.get().codename() + ".json"), RkmMetadata.class);
+            RkmMetadata currentMetadata = RkJsonUtil.read(Path.of(BotConstants.MAP_METADATA_PATH + map.get().codename() + ".json"), RkmMetadata.class);
             if (currentMetadata != null) {
               currentMetadata = currentMetadata.withAlignment(alignment);
-              RkJsonUtil.write(Path.of(BotConstants.MAP_OPTIONS_PATH + map.get().codename() + ".json"), RkmMetadata.class, currentMetadata);
+              RkJsonUtil.write(Path.of(BotConstants.MAP_METADATA_PATH + map.get().codename() + ".json"), RkmMetadata.class, currentMetadata);
               hook.sendMessage(MessageUtil.success(settings, "Alignment values for " + map.get().codename() + " have successfully been adjusted.")).queue();
             } else {
-              hook.sendMessage(MessageUtil.error(settings, "Could not find current map options.")).queue();
+              hook.sendMessage(MessageUtil.error(settings, "Could not find current map metadata.")).queue();
             }
           } catch (IOException e) {
             hook.sendMessage(MessageUtil.error(settings, "Could not write file.")).queue();
@@ -132,14 +132,14 @@ public class AdjustMap implements Command {
           Availability availability = ParseUtil.parseAvailability(availabilityOpt.getAsString());
 
           try {
-            RkmMetadata currentMetadata = RkJsonUtil.read(Path.of(BotConstants.MAP_OPTIONS_PATH + map.get().codename() + ".json"), RkmMetadata.class);
+            RkmMetadata currentMetadata = RkJsonUtil.read(Path.of(BotConstants.MAP_METADATA_PATH + map.get().codename() + ".json"), RkmMetadata.class);
             if (currentMetadata != null) {
               currentMetadata = currentMetadata.withAvailability(availability);
-              RkJsonUtil.write(Path.of(BotConstants.MAP_OPTIONS_PATH + map.get().codename() + ".json"), RkmMetadata.class, currentMetadata);
+              RkJsonUtil.write(Path.of(BotConstants.MAP_METADATA_PATH + map.get().codename() + ".json"), RkmMetadata.class, currentMetadata);
               hook.sendMessage(MessageUtil.success(settings,
                   "Availability for " + map.get().codename() + " has successfully been adjusted to " + availability.name() + ".")).queue();
             } else {
-              hook.sendMessage(MessageUtil.error(settings, "Could not find current map options.")).queue();
+              hook.sendMessage(MessageUtil.error(settings, "Could not find current map metadata.")).queue();
             }
           } catch (IOException e) {
             hook.sendMessage(MessageUtil.error(settings, "Could not write file.")).queue();
@@ -155,14 +155,14 @@ public class AdjustMap implements Command {
           Flavor flavor = ParseUtil.parseFlavor(flavorOpt.getAsString());
 
           try {
-            RkmMetadata currentMetadata = RkJsonUtil.read(Path.of(BotConstants.MAP_OPTIONS_PATH + map.get().codename() + ".json"), RkmMetadata.class);
+            RkmMetadata currentMetadata = RkJsonUtil.read(Path.of(BotConstants.MAP_METADATA_PATH + map.get().codename() + ".json"), RkmMetadata.class);
             if (currentMetadata != null) {
               currentMetadata = currentMetadata.withFlavor(flavor);
-              RkJsonUtil.write(Path.of(BotConstants.MAP_OPTIONS_PATH + map.get().codename() + ".json"), RkmMetadata.class, currentMetadata);
+              RkJsonUtil.write(Path.of(BotConstants.MAP_METADATA_PATH + map.get().codename() + ".json"), RkmMetadata.class, currentMetadata);
               hook.sendMessage(MessageUtil.success(settings,
                   "Flavor for " + map.get().codename() + " has successfully been adjusted to " + flavor.name() + ".")).queue();
             } else {
-              hook.sendMessage(MessageUtil.error(settings, "Could not find current map options.")).queue();
+              hook.sendMessage(MessageUtil.error(settings, "Could not find current map metadata.")).queue();
             }
           } catch (IOException e) {
             hook.sendMessage(MessageUtil.error(settings, "Could not write file.")).queue();
@@ -178,7 +178,7 @@ public class AdjustMap implements Command {
       return Optional.empty();
     }
     try {
-      var closestName = ParseUtil.parseMapCodename(Path.of(BotConstants.MAP_OPTIONS_PATH), mapping.getAsString());
+      var closestName = ParseUtil.parseMapCodename(Path.of(BotConstants.MAP_METADATA_PATH), mapping.getAsString());
       if (closestName.isPresent()) {
         return Optional.of(new RkmDecoder().decode(Path.of(BotConstants.MAP_PATH + closestName.get() + ".rkm")));
       }

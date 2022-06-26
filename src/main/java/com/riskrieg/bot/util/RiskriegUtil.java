@@ -70,7 +70,7 @@ public class RiskriegUtil {
         }
       }
 
-      RkmMetadata metadata = RkJsonUtil.read(Path.of(BotConstants.MAP_OPTIONS_PATH + game.map().codename() + ".json"), RkmMetadata.class);
+      RkmMetadata metadata = RkJsonUtil.read(Path.of(BotConstants.MAP_METADATA_PATH + game.map().codename() + ".json"), RkmMetadata.class);
 
       GameView.drawTerritoryNames(baseImage, game.map().textLayer());
 

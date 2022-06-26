@@ -101,7 +101,7 @@ public class MapSelect implements Command {
         return;
       }
 
-      Optional<String> mapCodename = ParseUtil.parseMapCodename(Path.of(BotConstants.MAP_OPTIONS_PATH), mapCodenameOpt.getAsString());
+      Optional<String> mapCodename = ParseUtil.parseMapCodename(Path.of(BotConstants.MAP_METADATA_PATH), mapCodenameOpt.getAsString());
       if (mapCodename.isEmpty()) {
         hook.sendMessage(MessageUtil.error(settings, "Invalid map name.")).queue();
         return;
@@ -109,7 +109,7 @@ public class MapSelect implements Command {
 
       try {
         RkmMap selectedMap = new RkmDecoder().decode(Path.of(BotConstants.MAP_PATH + mapCodename.get() + ".rkm"));
-        RkmMetadata metadata = RkJsonUtil.read(Path.of(BotConstants.MAP_OPTIONS_PATH + mapCodename.get() + ".json"), RkmMetadata.class);
+        RkmMetadata metadata = RkJsonUtil.read(Path.of(BotConstants.MAP_METADATA_PATH + mapCodename.get() + ".json"), RkmMetadata.class);
 
         if (metadata != null && metadata.availability().equals(Availability.AVAILABLE)) {
 
@@ -142,7 +142,7 @@ public class MapSelect implements Command {
           hook.sendMessage(MessageUtil.error(settings, "That map is not available.")).queue();
         }
       } catch (IOException | NoSuchAlgorithmException e) {
-        hook.sendMessage(MessageUtil.error(settings, "Could not load map or map options: " + e.getMessage())).queue();
+        hook.sendMessage(MessageUtil.error(settings, "Could not load map or map metadata: " + e.getMessage())).queue();
       }
 
     });

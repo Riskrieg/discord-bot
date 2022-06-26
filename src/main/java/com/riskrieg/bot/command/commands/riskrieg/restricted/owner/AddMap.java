@@ -91,9 +91,9 @@ public class AddMap implements Command {
 
         try {
           RkmMap map = new RkmDecoder().decode(new URL(mapFileOpt.getAsAttachment().getUrl()));
-          boolean optionsExist = ParseUtil.parseMapNameExact(Path.of(BotConstants.MAP_OPTIONS_PATH), map.codename())
+          boolean metadataExists = ParseUtil.parseMapNameExact(Path.of(BotConstants.MAP_METADATA_PATH), map.codename())
               .isPresent();
-          if (optionsExist && !overwrite) {
+          if (metadataExists && !overwrite) {
             hook.sendMessage(MessageUtil.error(settings, "A map with that name already exists.")).queue();
             return;
           }
@@ -106,7 +106,7 @@ public class AddMap implements Command {
 
           Alignment alignment = new Alignment(vAlign, hAlign);
           RkmMetadata metadata = new RkmMetadata(Flavor.COMMUNITY, Availability.COMING_SOON, alignment);
-          RkJsonUtil.write(Path.of(BotConstants.MAP_OPTIONS_PATH + map.codename() + ".json"), RkmMetadata.class,
+          RkJsonUtil.write(Path.of(BotConstants.MAP_METADATA_PATH + map.codename() + ".json"), RkmMetadata.class,
               metadata);
 
           hook.sendMessage(MessageUtil.success(settings, "Successfully added map: **" + map.displayName() + "**\n"

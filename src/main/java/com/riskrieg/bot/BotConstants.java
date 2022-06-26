@@ -41,7 +41,7 @@ public class BotConstants {
   @Deprecated
   public static final String SAVE_PATH = REPOSITORY_PATH + "saves/";
   public static final String MAP_PATH = REPOSITORY_PATH + "maps/";
-  public static final String MAP_OPTIONS_PATH = MAP_PATH + "options/";
+  public static final String MAP_METADATA_PATH = MAP_PATH + "metadata/";
 
   /* Riskrieg Image Resources */
   public static final String SKULL_IMAGE = "res/images/skull.png";
