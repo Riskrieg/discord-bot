@@ -22,10 +22,13 @@ import com.riskrieg.bot.BotConstants;
 import com.riskrieg.bot.command.Command;
 import com.riskrieg.bot.command.settings.Settings;
 import com.riskrieg.bot.command.settings.StandardSettings;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.localization.LocalizationFunction;
 import org.jetbrains.annotations.NotNull;
 
 public class Ping implements Command {
@@ -47,7 +50,10 @@ public class Ping implements Command {
 
   @Override
   public CommandData commandData() {
-    return Commands.slash(settings().name(), settings().description());
+    LocalizationFunction lf = RkLocalizationFunction.fromExternalBundles(this, DiscordLocale.ENGLISH_US, DiscordLocale.SPANISH).build();
+
+    return Commands.slash(settings().name(), settings().description())
+        .setLocalizationFunction(lf);
   }
 
   @Override
