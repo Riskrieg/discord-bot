@@ -49,7 +49,7 @@ public class ConfigUtil {
         return switch (hook.getInteraction().getChannelType()) {
           default -> false;
           case GUILD_PUBLIC_THREAD, GUILD_PRIVATE_THREAD -> true;
-          case TEXT -> PermissionUtil.checkPermission(hook.getInteraction().getTextChannel(), guild.getSelfMember(), Permission.VIEW_CHANNEL);
+          case TEXT -> PermissionUtil.checkPermission(hook.getInteraction().getGuildChannel().getPermissionContainer(), guild.getSelfMember(), Permission.VIEW_CHANNEL);
         };
       }
 
