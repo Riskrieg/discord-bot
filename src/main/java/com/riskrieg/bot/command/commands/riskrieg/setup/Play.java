@@ -71,7 +71,8 @@ public class Play implements Command {
     return Commands.slash(settings().name(), settings().description())
         .addOptions(OptionDataUtil.turnOrders())
         .addOption(OptionType.BOOLEAN, "reverse", "Whether the selected order strategy should be reversed.", false)
-        .addOption(OptionType.BOOLEAN, "randomize-first", "Whether the player who goes first should be randomized.", false);
+        .addOption(OptionType.BOOLEAN, "randomize-first", "Whether the player who goes first should be randomized.", false)
+        .setGuildOnly(true);
   }
 
   @Override

@@ -68,7 +68,8 @@ public class Leave implements Command {
 
   @Override
   public CommandData commandData() {
-    return Commands.slash(settings().name(), settings().description());
+    return Commands.slash(settings().name(), settings().description())
+        .setGuildOnly(true);
   }
 
   @Override

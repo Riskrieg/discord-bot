@@ -38,6 +38,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -72,7 +73,8 @@ public class AddMap implements Command {
             OptionDataUtil.horizontalAlignment().setRequired(true)
         )
         .addOption(OptionType.BOOLEAN, "overwrite", "Whether the map file should be overwritten if it already exists.",
-            false);
+            false)
+        .setDefaultPermissions(DefaultMemberPermissions.DISABLED);
   }
 
   @Override

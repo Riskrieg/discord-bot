@@ -86,7 +86,8 @@ public class ClaimCommand implements Command {
         .addChoice("Auto", "auto")
         .addChoice("Exact", "exact");
 
-    return Commands.slash(settings().name(), settings().description()).addOptions(territories, override);
+    return Commands.slash(settings().name(), settings().description()).addOptions(territories, override)
+        .setGuildOnly(true);
   }
 
   @Override

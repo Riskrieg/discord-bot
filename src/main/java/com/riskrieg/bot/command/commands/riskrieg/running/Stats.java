@@ -64,7 +64,8 @@ public class Stats implements Command { // TODO: Add ally count
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .addOption(OptionType.STRING, "color", "Select a color from the palette that was provided.", false);
+        .addOption(OptionType.STRING, "color", "Select a color from the palette that was provided.", false)
+        .setGuildOnly(true);
   }
 
   @Override

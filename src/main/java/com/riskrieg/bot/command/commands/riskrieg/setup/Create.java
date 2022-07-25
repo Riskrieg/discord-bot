@@ -85,7 +85,8 @@ public class Create implements Command {
     return Commands.slash(settings().name(), settings().description())
         .addOptions(OptionDataUtil.modes().setRequired(true), OptionDataUtil.palettes().setRequired(false))
         .addOption(OptionType.ATTACHMENT, "file", "Provide your own palette file.", false)
-        .addOption(OptionType.STRING, "features", "List the features you would like to enable.", false);
+        .addOption(OptionType.STRING, "features", "List the features you would like to enable.", false)
+        .setGuildOnly(true);
   }
 
   @Override

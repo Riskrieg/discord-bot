@@ -66,7 +66,8 @@ public class Ally implements Command {
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .addOption(OptionType.USER, "player", "Select the player you would like to form or request an alliance with.", true);
+        .addOption(OptionType.USER, "player", "Select the player you would like to form or request an alliance with.", true)
+        .setGuildOnly(true);
   }
 
   @Override

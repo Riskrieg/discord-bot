@@ -70,7 +70,8 @@ public class Join implements Command {
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
         .addOption(OptionType.STRING, "color", "Select a color from the palette that was provided.", true)
-        .addOption(OptionType.STRING, "name", "Choose a name.", false);
+        .addOption(OptionType.STRING, "name", "Choose a name.", false)
+        .setGuildOnly(true);
   }
 
   @Override

@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -76,7 +77,8 @@ public class AdjustMap implements Command {
     adjustFlavor.addOptions(OptionDataUtil.flavors().setRequired(true));
 
     return Commands.slash(settings().name(), settings().description())
-        .addSubcommands(adjustFlavor, adjustAvailability, adjustAlignment);
+        .addSubcommands(adjustFlavor, adjustAvailability, adjustAlignment)
+        .setDefaultPermissions(DefaultMemberPermissions.DISABLED);
   }
 
   @Override

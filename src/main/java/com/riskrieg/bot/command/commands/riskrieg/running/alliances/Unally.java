@@ -64,7 +64,8 @@ public class Unally implements Command {
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .addOption(OptionType.USER, "player", "Select the player you would like to break or deny an alliance with.", true);
+        .addOption(OptionType.USER, "player", "Select the player you would like to break or deny an alliance with.", true)
+        .setGuildOnly(true);
   }
 
   @Override

@@ -88,7 +88,8 @@ public class ListAlliances implements Command {
             new SubcommandData("list", "Show your alliances as a list.")
                 .addOption(OptionType.USER, "player", "Show a specific player's alliances as a list."),
             new SubcommandData("graph", "Show all alliances as a graph.")
-        );
+        )
+        .setGuildOnly(true);
   }
 
   @Override

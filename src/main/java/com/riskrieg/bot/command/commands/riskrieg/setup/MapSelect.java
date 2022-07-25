@@ -73,7 +73,8 @@ public class MapSelect implements Command {
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .addOption(OptionType.STRING, "name", "Type the name of the map you want to select.", true);
+        .addOption(OptionType.STRING, "name", "Type the name of the map you want to select.", true)
+        .setGuildOnly(true);
   }
 
   @Override

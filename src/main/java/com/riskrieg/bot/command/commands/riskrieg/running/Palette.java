@@ -66,7 +66,8 @@ public class Palette implements Command {
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
         .addOptions(OptionDataUtil.palettes().setRequired(false))
-        .addOption(OptionType.ATTACHMENT, "file", "Provide your own palette file.", false);
+        .addOption(OptionType.ATTACHMENT, "file", "Provide your own palette file.", false)
+        .setGuildOnly(true);
   }
 
   @Override

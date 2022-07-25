@@ -34,6 +34,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +60,9 @@ public class End implements Command {
 
   @Override
   public CommandData commandData() {
-    return Commands.slash(settings().name(), settings().description());
+    return Commands.slash(settings().name(), settings().description())
+        .setGuildOnly(true)
+        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL));
   }
 
   @Override
@@ -75,22 +78,23 @@ public class End implements Command {
 
       // Command execution
       Riskrieg api = RiskriegBuilder.createLocal(Path.of(BotConstants.REPOSITORY_PATH)).build();
-      api.retrieveGroup(GroupIdentifier.of(guild.getId())).queue(group -> group.retrieveGame(GameIdentifier.of(event.getChannel().getId())).queue(game -> {
-            if (group.deleteGame(GameIdentifier.of(event.getChannel().getId())).complete()) {
-              EmbedBuilder embedBuilder = new EmbedBuilder();
-              embedBuilder.setColor(settings.embedColor());
-              embedBuilder.setTitle("Game Ended");
-              embedBuilder.setDescription("The game has been ended.");
-              embedBuilder.setTimestamp(Instant.now());
+      api.retrieveGroup(GroupIdentifier.of(guild.getId()))
+          .queue(group -> group.retrieveGame(GameIdentifier.of(event.getChannel().getId())).queue(game -> {
+                if (group.deleteGame(GameIdentifier.of(event.getChannel().getId())).complete()) {
+                  EmbedBuilder embedBuilder = new EmbedBuilder();
+                  embedBuilder.setColor(settings.embedColor());
+                  embedBuilder.setTitle("Game Ended");
+                  embedBuilder.setDescription("The game has been ended.");
+                  embedBuilder.setTimestamp(Instant.now());
 
-              hook.sendMessage(MessageUtil.success(settings, "You have ended the game.")).queue(success -> {
-                hook.sendMessageEmbeds(embedBuilder.build()).queue();
-              });
-            } else {
-              hook.sendMessage(MessageUtil.error(settings, "Unable to end game.")).queue();
-            }
-          }, failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue()
-      ), failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue());
+                  hook.sendMessage(MessageUtil.success(settings, "You have ended the game.")).queue(success -> {
+                    hook.sendMessageEmbeds(embedBuilder.build()).queue();
+                  });
+                } else {
+                  hook.sendMessage(MessageUtil.error(settings, "Unable to end game.")).queue();
+                }
+              }, failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue()
+          ), failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue());
 
     });
   }
