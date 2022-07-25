@@ -43,6 +43,9 @@ public class BotConstants {
   public static final String MAP_PATH = REPOSITORY_PATH + "maps/";
   public static final String MAP_METADATA_PATH = MAP_PATH + "metadata/";
 
+  public static final String LANG_PATH = REPOSITORY_PATH + "lang/";
+  public static final String LANG_COMMAND_PROPERTIES_PATH = LANG_PATH + "command/";
+
   /* Riskrieg Image Resources */
   public static final String SKULL_IMAGE = "res/images/skull.png";
 
