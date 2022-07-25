@@ -28,7 +28,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.commands.localization.LocalizationFunction;
 import org.jetbrains.annotations.NotNull;
 
 public class Ping implements Command {
@@ -50,10 +49,13 @@ public class Ping implements Command {
 
   @Override
   public CommandData commandData() {
-    LocalizationFunction lf = RkLocalizationFunction.fromExternalBundles(this, DiscordLocale.ENGLISH_US, DiscordLocale.SPANISH).build();
-
     return Commands.slash(settings().name(), settings().description())
-        .setLocalizationFunction(lf);
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US,
+                DiscordLocale.SPANISH
+            ).build()
+        );
   }
 
   @Override
