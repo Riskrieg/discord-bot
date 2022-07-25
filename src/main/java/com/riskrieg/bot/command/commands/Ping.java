@@ -36,7 +36,7 @@ public class Ping implements Command {
 
   public Ping() {
     this.settings = new StandardSettings(
-        "Test to see if the bot is online and functional.",
+        "Check whether the bot is online and functional.",
         "ping", "pong")
         .withColor(BotConstants.GENERIC_CMD_COLOR);
   }
