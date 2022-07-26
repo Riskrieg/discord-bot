@@ -25,6 +25,7 @@ import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.ParseUtil;
 import com.riskrieg.bot.util.StringUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.game.entity.nation.Nation;
@@ -42,6 +43,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -54,7 +56,7 @@ public class Join implements Command {
 
   public Join() {
     this.settings = new StandardSettings(
-        "Join a " + Riskrieg.NAME + " game.",
+        "Join a game.",
         "join")
         .withColor(RkpPalette.DEFAULT_BORDER_COLOR.toAwtColor())
         .makeGuildOnly();
@@ -70,8 +72,13 @@ public class Join implements Command {
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
         .addOption(OptionType.STRING, "color", "Select a color from the palette that was provided.", true)
-        .addOption(OptionType.STRING, "name", "Choose a name.", false)
-        .setGuildOnly(true);
+        .addOption(OptionType.STRING, "player_name", "Choose a name for your player.", false)
+        .setGuildOnly(true)
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
