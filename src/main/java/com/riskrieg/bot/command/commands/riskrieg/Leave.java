@@ -25,6 +25,7 @@ import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.ConfigUtil;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.RiskriegUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.game.EndReason;
@@ -43,6 +44,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.utils.AttachmentOption;
@@ -54,7 +56,7 @@ public class Leave implements Command {
 
   public Leave() {
     this.settings = new StandardSettings(
-        "Remove yourself from the current game.",
+        "Leave the current game.",
         "leave", "forfeit")
         .withColor(RkpPalette.DEFAULT_BORDER_COLOR.toAwtColor())
         .makeGuildOnly();
@@ -69,7 +71,12 @@ public class Leave implements Command {
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .setGuildOnly(true);
+        .setGuildOnly(true)
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
