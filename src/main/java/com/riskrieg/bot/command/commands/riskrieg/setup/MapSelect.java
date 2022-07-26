@@ -25,6 +25,7 @@ import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.ParseUtil;
 import com.riskrieg.bot.util.RiskriegUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.codec.decode.RkmDecoder;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
@@ -45,6 +46,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -73,8 +75,13 @@ public class MapSelect implements Command {
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .addOption(OptionType.STRING, "name", "Type the name of the map you want to select.", true)
-        .setGuildOnly(true);
+        .addOption(OptionType.STRING, "title", "Type the name of the map you want to select.", true)
+        .setGuildOnly(true)
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
