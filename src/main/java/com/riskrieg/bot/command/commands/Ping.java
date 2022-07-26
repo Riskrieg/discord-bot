@@ -52,8 +52,7 @@ public class Ping implements Command {
     return Commands.slash(settings().name(), settings().description())
         .setLocalizationFunction(
             RkLocalizationFunction.fromExternalBundles(this,
-                DiscordLocale.ENGLISH_US,
-                DiscordLocale.SPANISH
+                DiscordLocale.ENGLISH_US
             ).build()
         );
   }
