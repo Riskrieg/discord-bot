@@ -26,6 +26,7 @@ import com.riskrieg.bot.util.ConfigUtil;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.OptionDataUtil;
 import com.riskrieg.bot.util.RiskriegUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.game.order.ColorOrder;
@@ -41,6 +42,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -48,14 +50,14 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.utils.AttachmentOption;
 import org.jetbrains.annotations.NotNull;
 
-public class Play implements Command {
+public class Start implements Command {
 
   private final Settings settings;
 
-  public Play() {
+  public Start() {
     this.settings = new StandardSettings(
         "Start the game.",
-        "play", "begin", "start")
+        "start", "begin", "play")
         .withColor(RkpPalette.DEFAULT_BORDER_COLOR.toAwtColor())
         .makeGuildOnly();
   }
@@ -71,8 +73,13 @@ public class Play implements Command {
     return Commands.slash(settings().name(), settings().description())
         .addOptions(OptionDataUtil.turnOrders())
         .addOption(OptionType.BOOLEAN, "reverse", "Whether the selected order strategy should be reversed.", false)
-        .addOption(OptionType.BOOLEAN, "randomize-first", "Whether the player who goes first should be randomized.", false)
-        .setGuildOnly(true);
+        .addOption(OptionType.BOOLEAN, "randomize_first", "Whether the player who goes first should be randomized.", false)
+        .setGuildOnly(true)
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override

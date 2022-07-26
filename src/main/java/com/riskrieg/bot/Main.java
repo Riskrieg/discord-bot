@@ -41,7 +41,7 @@ import com.riskrieg.bot.command.commands.riskrieg.running.alliances.Unally;
 import com.riskrieg.bot.command.commands.riskrieg.setup.Create;
 import com.riskrieg.bot.command.commands.riskrieg.setup.Join;
 import com.riskrieg.bot.command.commands.riskrieg.setup.MapSelect;
-import com.riskrieg.bot.command.commands.riskrieg.setup.Play;
+import com.riskrieg.bot.command.commands.riskrieg.setup.Start;
 import com.riskrieg.bot.command.handler.InteractionHandler;
 import com.riskrieg.bot.listener.InteractionListener;
 import com.riskrieg.bot.listener.ReadyListener;
@@ -77,7 +77,7 @@ public class Main { // TODO: Add command that lets you see a territory's neighbo
           new Create(),
           new Join(),
           new MapSelect(),
-          new Play(),
+          new Start(),
 
           new ClaimCommand(),
           new Skip(),
