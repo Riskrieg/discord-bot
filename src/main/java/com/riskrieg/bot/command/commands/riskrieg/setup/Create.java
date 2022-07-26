@@ -27,6 +27,7 @@ import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.OptionDataUtil;
 import com.riskrieg.bot.util.ParseUtil;
 import com.riskrieg.bot.util.StringUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.codec.decode.RkpDecoder;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
@@ -55,6 +56,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -68,7 +70,7 @@ public class Create implements Command {
 
   public Create() {
     this.settings = new StandardSettings(
-        "Creates a new " + Riskrieg.NAME + " game.",
+        "Creates a new game.",
         "create")
         .withColor(RkpPalette.DEFAULT_BORDER_COLOR.toAwtColor())
         .makeGuildOnly();
@@ -86,7 +88,12 @@ public class Create implements Command {
         .addOptions(OptionDataUtil.modes().setRequired(true), OptionDataUtil.palettes().setRequired(false))
         .addOption(OptionType.ATTACHMENT, "file", "Provide your own palette file.", false)
         .addOption(OptionType.STRING, "features", "List the features you would like to enable.", false)
-        .setGuildOnly(true);
+        .setGuildOnly(true)
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
