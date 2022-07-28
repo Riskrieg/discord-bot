@@ -80,7 +80,8 @@ public class MapSelect implements Command {
         .setLocalizationFunction(
             RkLocalizationFunction.fromExternalBundles(this,
                 DiscordLocale.ENGLISH_US,
-                DiscordLocale.SPANISH
+                DiscordLocale.SPANISH,
+                DiscordLocale.TURKISH
             ).build()
         );
   }
