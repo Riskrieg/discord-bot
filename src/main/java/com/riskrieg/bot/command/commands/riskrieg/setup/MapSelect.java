@@ -79,7 +79,8 @@ public class MapSelect implements Command {
         .setGuildOnly(true)
         .setLocalizationFunction(
             RkLocalizationFunction.fromExternalBundles(this,
-                DiscordLocale.ENGLISH_US
+                DiscordLocale.ENGLISH_US,
+                DiscordLocale.SPANISH
             ).build()
         );
   }
