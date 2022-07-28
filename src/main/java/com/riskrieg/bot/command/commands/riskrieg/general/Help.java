@@ -25,6 +25,7 @@ import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.OptionDataUtil;
 import com.riskrieg.bot.util.ParseUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.game.feature.Feature;
 import com.riskrieg.core.api.game.mode.Brawl;
@@ -32,6 +33,7 @@ import com.riskrieg.core.api.game.mode.Conquest;
 import com.riskrieg.core.api.game.mode.Regicide;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -43,7 +45,7 @@ public class Help implements Command {
 
   public Help() {
     this.settings = new StandardSettings(
-        "Display information about how to use the bot.",
+        "Learn how to use the bot.",
         "help")
         .withColor(BotConstants.GENERIC_CMD_COLOR)
         .makeGuildOnly();
@@ -58,7 +60,12 @@ public class Help implements Command {
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .addOptions(OptionDataUtil.modes());
+        .addOptions(OptionDataUtil.modes())
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
