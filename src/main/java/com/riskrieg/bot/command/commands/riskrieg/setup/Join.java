@@ -71,14 +71,14 @@ public class Join implements Command {
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .addOption(OptionType.STRING, "color", "Select a color from the palette that was provided.", true)
+        .addOption(OptionType.STRING, "color", "Provide a color from the current game palette.", true)
         .addOption(OptionType.STRING, "player_name", "Choose a name for your player.", false)
         .setGuildOnly(true)
         .setLocalizationFunction(
             RkLocalizationFunction.fromExternalBundles(this,
                 DiscordLocale.ENGLISH_US,
-                DiscordLocale.SPANISH,
-                DiscordLocale.TURKISH
+                DiscordLocale.SPANISH, // TODO: Update localization for "color" option description
+                DiscordLocale.TURKISH // TODO: Update localization for "color" option description
             ).build()
         );
   }
