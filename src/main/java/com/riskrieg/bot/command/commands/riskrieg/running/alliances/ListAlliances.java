@@ -29,6 +29,7 @@ import com.riskrieg.bot.command.settings.Settings;
 import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.ImageUtil;
 import com.riskrieg.bot.util.MessageUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.game.Game;
@@ -54,6 +55,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -69,7 +71,7 @@ public class ListAlliances implements Command {
 
   public ListAlliances() {
     this.settings = new StandardSettings(
-        "List your alliances.",
+        "List your current allies and pending alliance requests.",
         "alliances")
         .withColor(RkpPalette.DEFAULT_BORDER_COLOR.toAwtColor())
         .makeGuildOnly();
@@ -89,7 +91,12 @@ public class ListAlliances implements Command {
                 .addOption(OptionType.USER, "player", "Show a specific player's alliances as a list."),
             new SubcommandData("graph", "Show all alliances as a graph.")
         )
-        .setGuildOnly(true);
+        .setGuildOnly(true)
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
