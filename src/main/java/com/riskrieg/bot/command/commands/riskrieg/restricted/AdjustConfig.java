@@ -47,6 +47,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class AdjustConfig implements Command {
 
+  // TODO: Possibly localize at some point
+
   private final Settings settings;
 
   public AdjustConfig() {
@@ -65,7 +67,7 @@ public class AdjustConfig implements Command {
 
   @Override
   public CommandData commandData() {
-    SubcommandData server = new SubcommandData("server", "Requires 'Manage Server' permission. Manage the server configuration settings.");
+    SubcommandData server = new SubcommandData("server", "Manage the server configuration settings.");
     OptionData serverConfigItems = new OptionData(OptionType.STRING, "item", "Select a server config item.")
         .addChoice("kickOnServerExit", "kickOnServerExit")
         .addChoice("mentionOnTurn", "mentionOnTurn");
