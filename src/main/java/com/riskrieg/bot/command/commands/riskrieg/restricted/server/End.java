@@ -23,6 +23,7 @@ import com.riskrieg.bot.command.Command;
 import com.riskrieg.bot.command.settings.Settings;
 import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.MessageUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.identifier.GameIdentifier;
@@ -34,6 +35,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -45,7 +47,7 @@ public class End implements Command {
 
   public End() {
     this.settings = new StandardSettings(
-        "Requires 'Manage Channel' permission. End a game in the current channel.",
+        "End an active game in the current channel.",
         "end")
         .withColor(RkpPalette.DEFAULT_BORDER_COLOR.toAwtColor())
         .makeGuildOnly()
@@ -62,7 +64,12 @@ public class End implements Command {
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
         .setGuildOnly(true)
-        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL));
+        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL))
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
