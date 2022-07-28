@@ -48,6 +48,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class AddMap implements Command {
 
+  // TODO: Possibly localize at some point
+
   private final Settings settings;
 
   public AddMap() {
