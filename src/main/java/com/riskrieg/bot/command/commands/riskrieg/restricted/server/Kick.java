@@ -26,6 +26,7 @@ import com.riskrieg.bot.util.ConfigUtil;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.ParseUtil;
 import com.riskrieg.bot.util.RiskriegUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.game.EndReason;
@@ -45,6 +46,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -59,7 +61,7 @@ public class Kick implements Command {
 
   public Kick() {
     this.settings = new StandardSettings(
-        "Requires the 'Kick Members' permission. Remove a player from the current game.",
+        "Forcibly remove a player from the current game.",
         "kick")
         .withColor(RkpPalette.DEFAULT_BORDER_COLOR.toAwtColor())
         .makeGuildOnly()
@@ -75,9 +77,14 @@ public class Kick implements Command {
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .addOption(OptionType.STRING, "color", "Select a color from the palette that was provided.", true)
+        .addOption(OptionType.STRING, "color", "Provide a color from the current game palette.", true)
         .setGuildOnly(true)
-        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.KICK_MEMBERS));
+        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.KICK_MEMBERS))
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
