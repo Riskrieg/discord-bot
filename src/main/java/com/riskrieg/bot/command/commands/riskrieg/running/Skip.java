@@ -25,6 +25,7 @@ import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.ConfigUtil;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.RiskriegUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.game.Game;
@@ -44,6 +45,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -56,7 +58,7 @@ public class Skip implements Command {
 
   public Skip() {
     this.settings = new StandardSettings(
-        "Skip your turn, or skip the current player's turn if you have the 'Timeout Members' permission..",
+        "Skip your turn, or skip the current player's turn if you have the 'Timeout Members' permission.",
         "skip")
         .withColor(RkpPalette.DEFAULT_BORDER_COLOR.toAwtColor())
         .makeGuildOnly();
@@ -71,7 +73,12 @@ public class Skip implements Command {
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .setGuildOnly(true);
+        .setGuildOnly(true)
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
