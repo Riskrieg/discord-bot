@@ -23,6 +23,7 @@ import com.riskrieg.bot.command.Command;
 import com.riskrieg.bot.command.settings.Settings;
 import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.OptionDataUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.codec.decode.RkmDecoder;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.util.io.RkJsonUtil;
@@ -40,6 +41,7 @@ import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -51,7 +53,7 @@ public class Maps implements Command {
 
   public Maps() {
     this.settings = new StandardSettings(
-        "Display a list of maps.",
+        "Display a list of playable maps.",
         "maps")
         .withColor(RkpPalette.DEFAULT_BORDER_COLOR.toAwtColor())
         .makeGuildOnly();
@@ -66,7 +68,12 @@ public class Maps implements Command {
   @Override
   public CommandData commandData() {
     return Commands.slash(settings().name(), settings().description())
-        .addOptions(OptionDataUtil.mapFlavorsDisplay());
+        .addOptions(OptionDataUtil.mapFlavorsDisplay())
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
