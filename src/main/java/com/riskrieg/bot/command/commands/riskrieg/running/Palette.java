@@ -24,6 +24,7 @@ import com.riskrieg.bot.command.settings.Settings;
 import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.OptionDataUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.codec.decode.RkpDecoder;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
@@ -38,6 +39,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -50,7 +52,7 @@ public class Palette implements Command {
 
   public Palette() {
     this.settings = new StandardSettings(
-        "Changes the palette of the current game.",
+        "Change the palette of the current game.",
         "palette")
         .withColor(RkpPalette.DEFAULT_BORDER_COLOR.toAwtColor())
         .makeGuildOnly();
@@ -67,7 +69,12 @@ public class Palette implements Command {
     return Commands.slash(settings().name(), settings().description())
         .addOptions(OptionDataUtil.palettes().setRequired(false))
         .addOption(OptionType.ATTACHMENT, "file", "Provide your own palette file.", false)
-        .setGuildOnly(true);
+        .setGuildOnly(true)
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
