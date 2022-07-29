@@ -26,6 +26,7 @@ import com.riskrieg.bot.game.StandardAttack;
 import com.riskrieg.bot.util.ConfigUtil;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.RiskriegUtil;
+import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.game.ClaimOverride;
@@ -53,6 +54,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -82,12 +84,17 @@ public class ClaimCommand implements Command {
   @Override
   public CommandData commandData() {
     OptionData territories = new OptionData(OptionType.STRING, "territories", "Specify which territories you would like to claim.", true);
-    OptionData override = new OptionData(OptionType.STRING, "override", "Override the default claim functionality", false)
+    OptionData override = new OptionData(OptionType.STRING, "override", "Override the default claim functionality.", false)
         .addChoice("Auto", "auto")
         .addChoice("Exact", "exact");
 
     return Commands.slash(settings().name(), settings().description()).addOptions(territories, override)
-        .setGuildOnly(true);
+        .setGuildOnly(true)
+        .setLocalizationFunction(
+            RkLocalizationFunction.fromExternalBundles(this,
+                DiscordLocale.ENGLISH_US
+            ).build()
+        );
   }
 
   @Override
