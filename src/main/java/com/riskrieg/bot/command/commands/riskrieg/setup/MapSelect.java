@@ -105,7 +105,7 @@ public class MapSelect implements Command {
         return;
       }
 
-      OptionMapping mapCodenameOpt = event.getOption("name");
+      OptionMapping mapCodenameOpt = event.getOption("title");
       if (mapCodenameOpt == null) {
         hook.sendMessage(MessageUtil.error(settings, "Invalid map name.")).queue();
         return;

@@ -109,7 +109,7 @@ public class Join implements Command {
       }
       String colorStr = colorOpt.getAsString(); // Parse color from string once we can access the game's palette
 
-      OptionMapping nameOpt = event.getOption("name");
+      OptionMapping nameOpt = event.getOption("player_name");
       final String playerName = nameOpt == null ? member.getEffectiveName() : nameOpt.getAsString();
 
       // Command execution

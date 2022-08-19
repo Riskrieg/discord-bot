@@ -111,7 +111,7 @@ public class Start implements Command {
       };
 
       OptionMapping reverseOpt = event.getOption("reverse");
-      OptionMapping randomizeFirstOpt = event.getOption("randomize-first");
+      OptionMapping randomizeFirstOpt = event.getOption("randomize_first");
 
       final boolean reverseOrder = reverseOpt != null && reverseOpt.getAsBoolean();
       final boolean randomizeStart = randomizeFirstOpt != null && randomizeFirstOpt.getAsBoolean();
