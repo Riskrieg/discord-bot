@@ -49,10 +49,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -60,8 +60,8 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.utils.AttachmentOption;
-import org.jetbrains.annotations.NotNull;
+import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class ClaimCommand implements Command {
 
@@ -75,7 +75,7 @@ public class ClaimCommand implements Command {
         .makeGuildOnly();
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;
@@ -101,7 +101,7 @@ public class ClaimCommand implements Command {
   public void execute(SlashCommandInteractionEvent event) {
     event.deferReply(true).queue(hook -> {
 
-      Message genericSuccess = MessageUtil.success(settings, "Claim successfully processed."); // First message has to be ephemeral, so send this.
+      MessageCreateData genericSuccess = MessageUtil.success(settings, "Claim successfully processed."); // First message has to be ephemeral, so send this.
 
       // Guard clauses
       Member member = event.getMember();
@@ -146,7 +146,7 @@ public class ClaimCommand implements Command {
                     embedBuilder.setFooter("Thank you for playing!");
 
                     hook.sendMessage(genericSuccess).queue(success -> {
-                      hook.sendMessageEmbeds(embedBuilder.build()).addFile(RiskriegUtil.constructMapImageData(game), fileName, new AttachmentOption[0]).queue();
+                      hook.sendMessageEmbeds(embedBuilder.build()).addFiles(FileUpload.fromData(RiskriegUtil.constructMapImageData(game), fileName)).queue();
                       group.deleteGame(GameIdentifier.of(event.getChannel().getId())).queue();
                     });
                   }
@@ -168,12 +168,12 @@ public class ClaimCommand implements Command {
                     if (ConfigUtil.canMention(hook)) {
                       hook.sendMessage(genericSuccess).queue(success -> {
                         currentPlayer.ifPresent(player -> ConfigUtil.sendWithMention(hook, player.identifier().id(), message -> {
-                          message.editMessageEmbeds(embedBuilder.build()).addFile(RiskriegUtil.constructMapImageData(game), fileName, new AttachmentOption[0]).queue();
+                          message.editMessageEmbeds(embedBuilder.build()).setFiles(FileUpload.fromData(RiskriegUtil.constructMapImageData(game), fileName)).queue();
                         }));
                       });
                     } else {
                       hook.sendMessage(genericSuccess).queue(success -> {
-                        hook.sendMessageEmbeds(embedBuilder.build()).addFile(RiskriegUtil.constructMapImageData(game), fileName, new AttachmentOption[0]).queue();
+                        hook.sendMessageEmbeds(embedBuilder.build()).addFiles(FileUpload.fromData(RiskriegUtil.constructMapImageData(game), fileName)).queue();
                       });
                     }
                     group.saveGame(game).queue();
@@ -182,7 +182,7 @@ public class ClaimCommand implements Command {
                     embedBuilder.setFooter("");
 
                     hook.sendMessage(genericSuccess).queue(success -> {
-                      hook.sendMessageEmbeds(embedBuilder.build()).addFile(RiskriegUtil.constructMapImageData(game), fileName, new AttachmentOption[0]).queue();
+                      hook.sendMessageEmbeds(embedBuilder.build()).addFiles(FileUpload.fromData(RiskriegUtil.constructMapImageData(game), fileName)).queue();
                     });
                     group.saveGame(game).queue();
                   }

@@ -34,18 +34,18 @@ import com.riskrieg.core.api.identifier.PlayerIdentifier;
 import com.riskrieg.palette.RkpPalette;
 import java.nio.file.Path;
 import java.time.Instant;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.utils.AttachmentOption;
-import org.jetbrains.annotations.NotNull;
+import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class Ally implements Command {
 
@@ -59,7 +59,7 @@ public class Ally implements Command {
         .makeGuildOnly();
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;
@@ -81,7 +81,7 @@ public class Ally implements Command {
   public void execute(SlashCommandInteractionEvent event) {
     event.deferReply(true).queue(hook -> {
 
-      Message genericSuccess = MessageUtil.success(settings, "Command successfully processed."); // First message has to be ephemeral, so send this.
+      MessageCreateData genericSuccess = MessageUtil.success(settings, "Command successfully processed."); // First message has to be ephemeral, so send this.
 
       // Guard clauses
       Member requester = event.getMember();
@@ -130,7 +130,7 @@ public class Ally implements Command {
                   embedBuilder.setFooter("Thank you for playing!");
 
                   hook.sendMessage(genericSuccess).queue(success -> {
-                    hook.sendMessageEmbeds(embedBuilder.build()).addFile(RiskriegUtil.constructMapImageData(game), fileName, new AttachmentOption[0]).queue();
+                    hook.sendMessageEmbeds(embedBuilder.build()).addFiles(FileUpload.fromData(RiskriegUtil.constructMapImageData(game), fileName)).queue();
                     group.deleteGame(GameIdentifier.of(event.getChannel().getId())).queue();
                   });
                 }

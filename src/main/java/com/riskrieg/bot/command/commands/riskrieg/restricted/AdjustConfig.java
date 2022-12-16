@@ -31,19 +31,18 @@ import com.riskrieg.core.util.io.RkJsonUtil;
 import com.riskrieg.palette.RkpPalette;
 import java.io.IOException;
 import java.nio.file.Path;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import org.jetbrains.annotations.NotNull;
 
 public class AdjustConfig implements Command {
 
@@ -59,7 +58,7 @@ public class AdjustConfig implements Command {
         .makeGuildOnly();
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;

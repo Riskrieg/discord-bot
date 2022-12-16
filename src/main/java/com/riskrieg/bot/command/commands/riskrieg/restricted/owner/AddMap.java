@@ -37,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Path;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -44,7 +45,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import org.jetbrains.annotations.NotNull;
 
 public class AddMap implements Command {
 
@@ -60,7 +60,7 @@ public class AddMap implements Command {
         .makeOwnerOnly();
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;

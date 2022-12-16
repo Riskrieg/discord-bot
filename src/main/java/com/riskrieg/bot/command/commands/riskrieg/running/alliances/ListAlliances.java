@@ -50,10 +50,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -62,8 +63,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.utils.AttachmentOption;
-import org.jetbrains.annotations.NotNull;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 public class ListAlliances implements Command {
 
@@ -77,7 +77,7 @@ public class ListAlliances implements Command {
         .makeGuildOnly();
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;
@@ -264,7 +264,7 @@ public class ListAlliances implements Command {
             embedBuilder.setTitle("Alliances Graph");
             embedBuilder.setImage("attachment://" + fileName);
             embedBuilder.setColor(settings.embedColor());
-            hook.sendMessageEmbeds(embedBuilder.build()).addFile(ImageUtil.convertToByteArray(image), fileName, new AttachmentOption[0]).queue();
+            hook.sendMessageEmbeds(embedBuilder.build()).addFiles(FileUpload.fromData(ImageUtil.convertToByteArray(image), fileName)).queue();
           } else {
             hook.sendMessage(MessageUtil.error(settings, "Alliances are not enabled on this game.")).queue();
           }

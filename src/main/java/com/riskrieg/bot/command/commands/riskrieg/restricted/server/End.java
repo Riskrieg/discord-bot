@@ -29,8 +29,7 @@ import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.identifier.GameIdentifier;
 import com.riskrieg.core.api.identifier.GroupIdentifier;
 import com.riskrieg.palette.RkpPalette;
-import java.nio.file.Path;
-import java.time.Instant;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -39,7 +38,6 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import org.jetbrains.annotations.NotNull;
 
 public class End implements Command {
 
@@ -54,7 +52,7 @@ public class End implements Command {
         .withAuthorPermissions(Permission.MANAGE_CHANNEL);
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;

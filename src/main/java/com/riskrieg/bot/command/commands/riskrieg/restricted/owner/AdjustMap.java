@@ -35,6 +35,7 @@ import com.riskrieg.map.metadata.Flavor;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -42,7 +43,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import org.jetbrains.annotations.NotNull;
 
 public class AdjustMap implements Command {
 
@@ -58,7 +58,7 @@ public class AdjustMap implements Command {
         .makeOwnerOnly();
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;

@@ -53,7 +53,6 @@ import java.util.stream.Collectors;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -61,8 +60,8 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.utils.AttachmentOption;
-import org.jetbrains.annotations.NotNull;
+import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class Create implements Command {
 
@@ -76,7 +75,7 @@ public class Create implements Command {
         .makeGuildOnly();
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;
@@ -102,7 +101,7 @@ public class Create implements Command {
   public void execute(SlashCommandInteractionEvent event) {
     event.deferReply(true).queue(hook -> {
 
-      Message genericSuccess = MessageUtil.success(settings, "A new game was created."); // First message has to be ephemeral, so send this.
+      MessageCreateData genericSuccess = MessageUtil.success(settings, "A new game was created."); // First message has to be ephemeral, so send this.
 
       // Guard clauses
       Guild guild = event.getGuild();
@@ -136,7 +135,7 @@ public class Create implements Command {
           .queue(group -> group.createGame(GameConstants.standard().clampTo(palette), palette, GameIdentifier.of(event.getChannel().getId()), mode, featureFlags).queue(game -> {
                 hook.sendMessage(genericSuccess).queue(success -> {
                   hook.sendMessageEmbeds(createMessage(event.getMember(), modeStr, palette.name(), featureFlags))
-                      .addFile(generateDynamicColorChoices(game.palette()), "color-choices.png", new AttachmentOption[0])
+                      .addFiles(FileUpload.fromData(generateDynamicColorChoices(game.palette()), "color-choices.png"))
                       .queue();
                 });
               }, failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue()

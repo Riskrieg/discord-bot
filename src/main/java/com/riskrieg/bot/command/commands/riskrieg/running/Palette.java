@@ -35,16 +35,16 @@ import com.riskrieg.palette.RkpPalette;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Optional;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import org.jetbrains.annotations.NotNull;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class Palette implements Command {
 
@@ -58,7 +58,7 @@ public class Palette implements Command {
         .makeGuildOnly();
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;
@@ -81,7 +81,7 @@ public class Palette implements Command {
   public void execute(SlashCommandInteractionEvent event) {
     event.deferReply(true).queue(hook -> {
 
-      Message genericSuccess = MessageUtil.success(settings, "Received command request."); // First message has to be ephemeral, so send this.
+      MessageCreateData genericSuccess = MessageUtil.success(settings, "Received command request."); // First message has to be ephemeral, so send this.
 
       // Guard clauses
       Member member = event.getMember();

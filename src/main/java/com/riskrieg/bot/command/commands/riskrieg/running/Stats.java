@@ -34,6 +34,7 @@ import com.riskrieg.palette.RkpColor;
 import com.riskrieg.palette.RkpPalette;
 import java.nio.file.Path;
 import java.util.Optional;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -43,7 +44,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import org.jetbrains.annotations.NotNull;
 
 public class Stats implements Command { // TODO: Add ally count
 
@@ -57,7 +57,7 @@ public class Stats implements Command { // TODO: Add ally count
         .makeGuildOnly();
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;

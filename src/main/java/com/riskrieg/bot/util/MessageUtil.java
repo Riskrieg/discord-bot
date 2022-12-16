@@ -23,13 +23,13 @@ import com.riskrieg.bot.command.settings.Settings;
 import com.riskrieg.core.api.Riskrieg;
 import java.time.Instant;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.MessageBuilder;
-import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class MessageUtil {
 
-  public static Message error(Settings cmdSettings, String description) {
-    MessageBuilder messageBuilder = new MessageBuilder();
+  public static MessageCreateData error(Settings cmdSettings, String description) {
+    MessageCreateBuilder builder = new MessageCreateBuilder();
 
     EmbedBuilder embedBuilder = new EmbedBuilder();
     embedBuilder.setColor(BotConstants.ERROR_COLOR);
@@ -38,12 +38,12 @@ public class MessageUtil {
     embedBuilder.setFooter("Version: " + Riskrieg.VERSION);
     embedBuilder.setTimestamp(Instant.now());
 
-    messageBuilder.setEmbeds(embedBuilder.build());
-    return messageBuilder.build();
+    builder.setEmbeds(embedBuilder.build());
+    return builder.build();
   }
 
-  public static Message success(Settings cmdSettings, String description) {
-    MessageBuilder messageBuilder = new MessageBuilder();
+  public static MessageCreateData success(Settings cmdSettings, String description) {
+    MessageCreateBuilder builder = new MessageCreateBuilder();
 
     EmbedBuilder embedBuilder = new EmbedBuilder();
     embedBuilder.setColor(BotConstants.SUCCESS_COLOR);
@@ -52,8 +52,8 @@ public class MessageUtil {
     embedBuilder.setFooter("Version: " + Riskrieg.VERSION);
     embedBuilder.setTimestamp(Instant.now());
 
-    messageBuilder.setEmbeds(embedBuilder.build());
-    return messageBuilder.build();
+    builder.setEmbeds(embedBuilder.build());
+    return builder.build();
   }
 
 }

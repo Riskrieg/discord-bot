@@ -31,13 +31,13 @@ import com.riskrieg.core.api.game.feature.Feature;
 import com.riskrieg.core.api.game.mode.Brawl;
 import com.riskrieg.core.api.game.mode.Conquest;
 import com.riskrieg.core.api.game.mode.Regicide;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import org.jetbrains.annotations.NotNull;
 
 public class Help implements Command {
 
@@ -51,7 +51,7 @@ public class Help implements Command {
         .makeGuildOnly();
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;

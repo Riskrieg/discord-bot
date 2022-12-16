@@ -40,11 +40,11 @@ import com.riskrieg.palette.RkpColor;
 import com.riskrieg.palette.RkpPalette;
 import java.nio.file.Path;
 import java.util.Optional;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
@@ -52,8 +52,8 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.utils.AttachmentOption;
-import org.jetbrains.annotations.NotNull;
+import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class Kick implements Command {
 
@@ -68,7 +68,7 @@ public class Kick implements Command {
         .withAuthorPermissions(Permission.KICK_MEMBERS);
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;
@@ -91,7 +91,7 @@ public class Kick implements Command {
   public void execute(SlashCommandInteractionEvent event) {
     event.deferReply(true).queue(hook -> {
 
-      Message genericSuccess = MessageUtil.success(settings, "You have kicked a player from the game."); // First message has to be ephemeral, so send this.
+      MessageCreateData genericSuccess = MessageUtil.success(settings, "You have kicked a player from the game."); // First message has to be ephemeral, so send this.
 
       // Guard clauses
       Member member = event.getMember();
@@ -132,7 +132,7 @@ public class Kick implements Command {
 
                     if (game.map() != null) {
                       embedBuilder.setImage("attachment://map.png");
-                      messageAction = hook.sendMessageEmbeds(embedBuilder.build()).addFile(RiskriegUtil.constructMapImageData(game), "map.png", new AttachmentOption[0]);
+                      messageAction = hook.sendMessageEmbeds(embedBuilder.build()).addFiles(FileUpload.fromData(RiskriegUtil.constructMapImageData(game), "map.png"));
                     }
 
                     var finalMessageAction = messageAction;

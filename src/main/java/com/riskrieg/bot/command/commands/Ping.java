@@ -23,12 +23,12 @@ import com.riskrieg.bot.command.Command;
 import com.riskrieg.bot.command.settings.Settings;
 import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.lang.RkLocalizationFunction;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import org.jetbrains.annotations.NotNull;
 
 public class Ping implements Command {
 
@@ -41,7 +41,7 @@ public class Ping implements Command {
         .withColor(BotConstants.GENERIC_CMD_COLOR);
   }
 
-  @NotNull
+  @NonNull
   @Override
   public Settings settings() {
     return settings;

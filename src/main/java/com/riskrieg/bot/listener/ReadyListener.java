@@ -21,15 +21,15 @@ package com.riskrieg.bot.listener;
 import com.riskrieg.bot.command.Command;
 import com.riskrieg.bot.config.BotConfig;
 import com.riskrieg.core.util.io.RkJsonUtil;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.events.ReadyEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
-import org.jetbrains.annotations.NotNull;
 
 public class ReadyListener extends ListenerAdapter {
 
@@ -40,7 +40,7 @@ public class ReadyListener extends ListenerAdapter {
   }
 
   @Override
-  public void onReady(@NotNull ReadyEvent event) {
+  public void onReady(@NonNull ReadyEvent event) {
     BotConfig botConfig = new BotConfig(false);
     try {
       if (!Files.exists(botConfig.path())) {

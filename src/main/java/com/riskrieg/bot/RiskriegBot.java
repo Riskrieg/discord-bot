@@ -19,8 +19,8 @@
 package com.riskrieg.bot;
 
 import com.riskrieg.bot.auth.Auth;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
-import org.jetbrains.annotations.NotNull;
 
 public class RiskriegBot implements Bot {
 
@@ -33,7 +33,7 @@ public class RiskriegBot implements Bot {
   }
 
   @Override
-  public void registerListeners(@NotNull Object... listeners) {
+  public void registerListeners(@NonNull Object... listeners) {
     builder.addEventListeners(listeners);
   }
 

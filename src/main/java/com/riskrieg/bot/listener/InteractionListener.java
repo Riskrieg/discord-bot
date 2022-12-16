@@ -19,10 +19,10 @@
 package com.riskrieg.bot.listener;
 
 import com.riskrieg.bot.command.handler.InteractionHandler;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 
 public class InteractionListener extends ListenerAdapter {
 
@@ -33,12 +33,12 @@ public class InteractionListener extends ListenerAdapter {
   }
 
   @Override
-  public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+  public void onSlashCommandInteraction(@NonNull SlashCommandInteractionEvent event) {
     handler.process(event);
   }
 
   @Override
-  public void onModalInteraction(@NotNull ModalInteractionEvent event) {
+  public void onModalInteraction(@NonNull ModalInteractionEvent event) {
     // TODO: Implement modal handler
   }
 }
