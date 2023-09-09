@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.riskrieg'
-version '2.0.0-0.2212-beta'
+version '2.0.0-0.2309-beta'
 
 java {
     toolchain {
@@ -34,7 +34,7 @@ dependencies {
     implementation("com.riskrieg:codec:1.0.0-3.2206")
 
     implementation("io.github.aaronjyoder:fill:1.0.0-0.2206")
-    implementation("net.dv8tion:JDA:5.0.0-beta.2")
+    implementation("net.dv8tion:JDA:5.0.0-beta.13")
     implementation("com.squareup.okhttp3:okhttp") {
         version {
             strictly '3.13.0'
@@ -45,7 +45,7 @@ dependencies {
     implementation("org.jgrapht:jgrapht-ext:1.5.1")
 
     // Logging
-    implementation('org.apache.logging.log4j:log4j-slf4j18-impl:2.18.0')
+    implementation('org.apache.logging.log4j:log4j-slf4j2-impl:2.20.0')
 
     testImplementation('org.junit.jupiter:junit-jupiter-api:5.9.0')
     testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.9.0')
