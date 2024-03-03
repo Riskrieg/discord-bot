@@ -54,7 +54,7 @@ public class RiskriegBot implements Bot {
     public void start() {
         try {
             builder.build(); // TODO: Potentially set chunking policy and such, try to do this without using any intents first though.
-            // TODO: Run services
+            services.forEach(Service::run);
         } catch (Exception e) {
             e.printStackTrace();
         }

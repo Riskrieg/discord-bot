@@ -9,7 +9,7 @@ public class AutomaticSkipService implements Service {
 
     @Override
     public void run() {
-
+        System.out.println("\r[Services] " + name() + " service running.");
     }
 
 }
