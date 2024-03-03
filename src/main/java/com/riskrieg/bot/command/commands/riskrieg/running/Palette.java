@@ -115,12 +115,15 @@ public class Palette implements Command {
       api.retrieveGroup(GroupIdentifier.of(guild.getId())).queue(group -> group.retrieveGame(GameIdentifier.of(event.getChannel().getId())).queue(game -> {
             if (game.players().stream().anyMatch(player -> player.identifier().equals(PlayerIdentifier.of(member.getId())))) {
               game.setPalette(palette).queue(success -> {
-                hook.sendMessage(genericSuccess).queue(success2 -> {
-                  hook.sendMessage(MessageUtil.success(settings, "The palette was successfully updated to **" + palette.name() + "**.",
-                                  FileUpload.fromData(PaletteUtil.generatePaletteDisplay(game.palette()), "palette-display.png"))).queue();
-                });
+                if(success) {
+                  hook.sendMessage(genericSuccess).queue(success2 -> {
+                    hook.sendMessage(MessageUtil.success(settings, "The palette was successfully updated to **" + palette.name() + "**.",
+                            FileUpload.fromData(PaletteUtil.generatePaletteDisplay(game.palette()), "palette-display.png"))).queue();
+                  });
+                }
                 group.saveGame(game).queue();
-              }, failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue());
+              }, failure -> {hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue();
+                System.out.println("failure");});
             } else {
               hook.sendMessage(MessageUtil.error(settings, "Palettes can only be selected by players in the game.")).queue();
             }
