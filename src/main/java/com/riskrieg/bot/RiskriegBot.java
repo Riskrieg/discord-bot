@@ -19,31 +19,45 @@
 package com.riskrieg.bot;
 
 import com.riskrieg.bot.auth.Auth;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import com.riskrieg.bot.service.Service;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RiskriegBot implements Bot {
 
-  private final Auth auth;
-  private final DefaultShardManagerBuilder builder;
+    private final Auth auth;
+    private final DefaultShardManagerBuilder builder;
+    private final Set<Service> services;
 
-  public RiskriegBot(Auth auth) {
-    this.auth = auth;
-    this.builder = DefaultShardManagerBuilder.createLight(auth.token());
-  }
-
-  @Override
-  public void registerListeners(@NonNull Object... listeners) {
-    builder.addEventListeners(listeners);
-  }
-
-  @Override
-  public void start() {
-    try {
-      builder.build(); // TODO: Potentially set chunking policy and such, try to do this without using any intents first though.
-    } catch (Exception e) {
-      e.printStackTrace();
+    public RiskriegBot(Auth auth) {
+        this.auth = auth;
+        this.builder = DefaultShardManagerBuilder.createLight(auth.token());
+        this.services = new HashSet<>();
     }
-  }
+
+    @Override
+    public void registerListeners(@Nonnull Object... listeners) {
+        builder.addEventListeners(listeners);
+    }
+
+    @Override
+    public void registerServices(@Nonnull Service... services) {
+        this.services.addAll(Arrays.asList(services));
+        System.out.println("\r[Services] " + this.services.size() + " local services registered.");
+    }
+
+    @Override
+    public void start() {
+        try {
+            builder.build(); // TODO: Potentially set chunking policy and such, try to do this without using any intents first though.
+            // TODO: Run services
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }

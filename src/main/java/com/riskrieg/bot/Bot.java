@@ -18,11 +18,15 @@
 
 package com.riskrieg.bot;
 
+import com.riskrieg.bot.service.Service;
+
 import javax.annotation.Nonnull;
 
 public interface Bot {
 
   void registerListeners(@Nonnull Object... listeners);
+
+  void registerServices(@Nonnull Service... services);
 
   void start();
 

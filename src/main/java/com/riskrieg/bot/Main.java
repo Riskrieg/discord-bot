@@ -45,6 +45,8 @@ import com.riskrieg.bot.command.commands.riskrieg.setup.Start;
 import com.riskrieg.bot.command.handler.InteractionHandler;
 import com.riskrieg.bot.listener.InteractionListener;
 import com.riskrieg.bot.listener.ReadyListener;
+import com.riskrieg.bot.service.AutomaticPingService;
+import com.riskrieg.bot.service.AutomaticSkipService;
 import com.riskrieg.core.util.io.RkJsonUtil;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -104,10 +106,19 @@ public class Main { // TODO: Add command that lets you see a territory's neighbo
       handler.registerCommands(commands);
       System.out.println("\r[Startup] " + commands.size() + (commands.size() == 1 ? " command" : " commands") + " registered locally.");
 
+      // Start up separate services
+      bot.registerServices(
+              new AutomaticPingService(),
+              new AutomaticSkipService()
+      );
+
+      //System.out.println("\r[Services] [name] service running.");
+
       bot.registerListeners(
           new ReadyListener(commands),
           new InteractionListener(handler)
       );
+
       bot.start();
     } catch (IOException e) {
       e.printStackTrace();
