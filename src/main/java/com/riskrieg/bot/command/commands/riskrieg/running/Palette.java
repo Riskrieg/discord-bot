@@ -24,6 +24,7 @@ import com.riskrieg.bot.command.settings.Settings;
 import com.riskrieg.bot.command.settings.StandardSettings;
 import com.riskrieg.bot.util.MessageUtil;
 import com.riskrieg.bot.util.OptionDataUtil;
+import com.riskrieg.bot.util.PaletteUtil;
 import com.riskrieg.bot.util.lang.RkLocalizationFunction;
 import com.riskrieg.codec.decode.RkpDecoder;
 import com.riskrieg.core.api.Riskrieg;
@@ -44,6 +45,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class Palette implements Command {
@@ -101,8 +103,8 @@ public class Palette implements Command {
       Optional<RkpPalette> optPalette = getPalette(event);
       if (optPalette.isEmpty()) {
         api.retrieveGroup(GroupIdentifier.of(guild.getId())).queue(group -> group.retrieveGame(GameIdentifier.of(event.getChannel().getId())).queue(game -> {
-              // TODO: Send a palette preview
-              hook.sendMessage(MessageUtil.success(settings, "The current palette is **" + game.palette().name() + "**.")).queue();
+              hook.sendMessage(MessageUtil.success(settings, "The current palette is **" + game.palette().name() + "**.",
+                      FileUpload.fromData(PaletteUtil.generatePaletteDisplay(game.palette()), "color-choices.png"))).queue();
             }, failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue()
         ), failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue());
         return;
@@ -113,9 +115,9 @@ public class Palette implements Command {
       api.retrieveGroup(GroupIdentifier.of(guild.getId())).queue(group -> group.retrieveGame(GameIdentifier.of(event.getChannel().getId())).queue(game -> {
             if (game.players().stream().anyMatch(player -> player.identifier().equals(PlayerIdentifier.of(member.getId())))) {
               game.setPalette(palette).queue(success -> {
-
                 hook.sendMessage(genericSuccess).queue(success2 -> {
-                  hook.sendMessage(MessageUtil.success(settings, "The palette was successfully updated to **" + palette.name() + "**.")).queue();
+                  hook.sendMessage(MessageUtil.success(settings, "The palette was successfully updated to **" + palette.name() + "**.",
+                                  FileUpload.fromData(PaletteUtil.generatePaletteDisplay(game.palette()), "color-choices.png"))).queue();
                 });
                 group.saveGame(game).queue();
               }, failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue());

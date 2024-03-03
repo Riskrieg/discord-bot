@@ -23,6 +23,7 @@ import com.riskrieg.bot.command.settings.Settings;
 import com.riskrieg.core.api.Riskrieg;
 import java.time.Instant;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
@@ -53,6 +54,21 @@ public class MessageUtil {
     embedBuilder.setTimestamp(Instant.now());
 
     builder.setEmbeds(embedBuilder.build());
+    return builder.build();
+  }
+
+  public static MessageCreateData success(Settings cmdSettings, String description, FileUpload fileUpload) {
+    MessageCreateBuilder builder = new MessageCreateBuilder();
+
+    EmbedBuilder embedBuilder = new EmbedBuilder();
+    embedBuilder.setColor(BotConstants.SUCCESS_COLOR);
+    embedBuilder.setTitle("Success: " + cmdSettings.name());
+    embedBuilder.setDescription(description);
+    embedBuilder.setImage("attachment://" + fileUpload.getName());
+    embedBuilder.setFooter("Version: " + Riskrieg.VERSION);
+    embedBuilder.setTimestamp(Instant.now());
+
+    builder.setEmbeds(embedBuilder.build()).addFiles(fileUpload);
     return builder.build();
   }
 
