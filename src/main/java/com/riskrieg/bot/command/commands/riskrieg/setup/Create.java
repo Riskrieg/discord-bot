@@ -131,7 +131,7 @@ public class Create implements Command {
           .queue(group -> group.createGame(GameConstants.standard().clampTo(palette), palette, GameIdentifier.of(event.getChannel().getId()), mode, featureFlags).queue(game -> {
                 hook.sendMessage(genericSuccess).queue(success -> {
                   hook.sendMessageEmbeds(createMessage(event.getMember(), modeStr, palette.name(), featureFlags))
-                      .addFiles(FileUpload.fromData(PaletteUtil.generatePaletteDisplay(game.palette()), "color-choices.png"))
+                      .addFiles(FileUpload.fromData(PaletteUtil.generatePaletteDisplay(game.palette()), "palette-display.png"))
                       .queue();
                 });
               }, failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue()
@@ -165,7 +165,7 @@ public class Create implements Command {
     EmbedBuilder embedBuilder = new EmbedBuilder();
     embedBuilder.setColor(settings.embedColor());
     embedBuilder.setTitle("Join Game");
-    embedBuilder.setImage("attachment://color-choices.png");
+    embedBuilder.setImage("attachment://palette-display.png");
 
     String featuresString = "Features: " + (featureFlags.length == 0 ? "*None*" : Arrays.stream(featureFlags)
         .filter(FeatureFlag::enabled)

@@ -104,7 +104,7 @@ public class Palette implements Command {
       if (optPalette.isEmpty()) {
         api.retrieveGroup(GroupIdentifier.of(guild.getId())).queue(group -> group.retrieveGame(GameIdentifier.of(event.getChannel().getId())).queue(game -> {
               hook.sendMessage(MessageUtil.success(settings, "The current palette is **" + game.palette().name() + "**.",
-                      FileUpload.fromData(PaletteUtil.generatePaletteDisplay(game.palette()), "color-choices.png"))).queue();
+                      FileUpload.fromData(PaletteUtil.generatePaletteDisplay(game.palette()), "palette-display.png"))).queue();
             }, failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue()
         ), failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue());
         return;
@@ -117,7 +117,7 @@ public class Palette implements Command {
               game.setPalette(palette).queue(success -> {
                 hook.sendMessage(genericSuccess).queue(success2 -> {
                   hook.sendMessage(MessageUtil.success(settings, "The palette was successfully updated to **" + palette.name() + "**.",
-                                  FileUpload.fromData(PaletteUtil.generatePaletteDisplay(game.palette()), "color-choices.png"))).queue();
+                                  FileUpload.fromData(PaletteUtil.generatePaletteDisplay(game.palette()), "palette-display.png"))).queue();
                 });
                 group.saveGame(game).queue();
               }, failure -> hook.sendMessage(MessageUtil.error(settings, failure.getMessage())).queue());
