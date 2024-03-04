@@ -10,6 +10,12 @@ import com.riskrieg.core.api.game.entity.nation.Nation;
 import com.riskrieg.core.api.group.Group;
 import com.riskrieg.core.api.identifier.PlayerIdentifier;
 import com.riskrieg.core.util.io.RkJsonUtil;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.sharding.ShardManager;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.IOException;
@@ -41,7 +47,7 @@ public class AutomaticPingService implements Service {
     }
 
     @Override
-    public void run() {
+    public void run(ShardManager manager) {
         // Load configs
         Path configDirectory = Paths.get(BotConstants.CONFIG_PATH + "service/automatic-ping");
         if(Files.notExists(configDirectory)) {
@@ -95,11 +101,19 @@ public class AutomaticPingService implements Service {
                 Game game = pair.getKey();
                 AutomaticPingConfig config = pair.getValue();
 
-                Set<PlayerIdentifier> playersToPing = game.nations().stream().filter(nation -> game.claims().stream().noneMatch(claim -> nation.identifier().equals(claim.identifier())))
+                Set<String> playersToPing = game.nations().stream().filter(nation -> game.claims().stream().noneMatch(claim -> nation.identifier().equals(claim.identifier())))
                         .map(Nation::leaderIdentifier)
+                        .map(PlayerIdentifier::id)
                         .collect(Collectors.toSet());
 
-                ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
+                Guild guild = manager.getGuildCache().getElementById(config.guildId());
+                if(guild != null) {
+                    TextChannel channel = guild.getChannelById(TextChannel.class, config.identifier().id());
+                    if(channel != null) {
+                        // Set up repeated ping action
+                    }
+                }
+
             }
 
             // TODO: Need to handle the case where the game goes from SETUP to ACTIVE, have to update executor
@@ -111,8 +125,16 @@ public class AutomaticPingService implements Service {
                 game.getCurrentPlayer().ifPresent(player -> {
                     PlayerIdentifier playerToPing = player.identifier();
 
-                    ScheduledExecutorService pingService = Executors.newSingleThreadScheduledExecutor();
-                    // TODO: Schedule service. Need instance of JDA API in order to do this properly.
+                    //ScheduledExecutorService pingService = Executors.newSingleThreadScheduledExecutor();
+
+                    Guild guild = manager.getGuildCache().getElementById(config.guildId());
+                    if(guild != null) {
+                        TextChannel channel = guild.getChannelById(TextChannel.class, config.identifier().id());
+                        if(channel != null) {
+                            // Set up repeated ping action
+                        }
+                    }
+
                 });
             }
 

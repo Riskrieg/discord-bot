@@ -20,11 +20,15 @@ package com.riskrieg.bot;
 
 import com.riskrieg.bot.auth.Auth;
 import com.riskrieg.bot.service.Service;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
+import net.dv8tion.jda.api.sharding.ShardManager;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class RiskriegBot implements Bot {
@@ -35,7 +39,7 @@ public class RiskriegBot implements Bot {
 
     public RiskriegBot(Auth auth) {
         this.auth = auth;
-        this.builder = DefaultShardManagerBuilder.createLight(auth.token());
+        this.builder = DefaultShardManagerBuilder.createDefault(auth.token());
         this.services = new HashSet<>();
     }
 
@@ -53,8 +57,13 @@ public class RiskriegBot implements Bot {
     @Override
     public void start() {
         try {
-            builder.build(); // TODO: Potentially set chunking policy and such, try to do this without using any intents first though.
-            services.forEach(Service::run);
+            ShardManager manager = builder.build(); // TODO: Potentially set chunking policy and such, try to do this without using any intents first though.
+
+            for (JDA shard : manager.getShards()) {
+                shard.awaitReady();
+            }
+
+            services.forEach(service -> service.run(manager));
         } catch (Exception e) {
             e.printStackTrace();
         }
