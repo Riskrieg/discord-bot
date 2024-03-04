@@ -56,11 +56,12 @@ public class AutomaticPingService implements Service {
                     .filter(AutomaticPingConfig::enabled)
                     .collect(Collectors.toSet());
 
-            // Load all games
+            // Load all groups
             Riskrieg api = RiskriegBuilder.createLocal(Path.of(BotConstants.REPOSITORY_PATH)).build();
 
             Collection<Group> groups = api.retrieveAllGroups().complete();
 
+            // Load all games with configs, and partition the games into setup phase and active phase
             var partitionedGameConfigPairs = groups.stream()
                     .flatMap(group -> group.retrieveAllGames().complete().stream())
                     .filter(game -> enabledConfigs.stream().anyMatch(c -> c.identifier().equals(game.identifier())))
@@ -75,7 +76,7 @@ public class AutomaticPingService implements Service {
 
             List<AbstractMap.SimpleEntry<Game, AutomaticPingConfig>> setupGamePairs = partitionedGameConfigPairs.get(true);
             List<AbstractMap.SimpleEntry<Game, AutomaticPingConfig>> activeGamePairs = partitionedGameConfigPairs.get(false);
-            
+
         } catch(IOException e) {
             System.err.println("Error reading directory: " + e.getMessage());
         }
