@@ -52,22 +52,30 @@ public class AutomaticPingService implements Service {
                     .filter(Objects::nonNull)
                     .toList();
 
-            Set<GameIdentifier> enabledIdentifiers = serviceConfigs.stream()
+            Set<AutomaticPingConfig> enabledConfigs = serviceConfigs.stream()
                     .filter(AutomaticPingConfig::enabled)
-                    .map(AutomaticPingConfig::identifier)
                     .collect(Collectors.toSet());
 
             // Load all games
             Riskrieg api = RiskriegBuilder.createLocal(Path.of(BotConstants.REPOSITORY_PATH)).build();
 
             Collection<Group> groups = api.retrieveAllGroups().complete();
-            Map<Boolean, List<Game>> partitionedGames = groups.stream()
-                    .flatMap(group -> group.retrieveAllGames().complete().stream())
-                    .filter(game -> enabledIdentifiers.contains(game.identifier()))
-                    .collect(Collectors.partitioningBy(game -> game.phase().equals(GamePhase.SETUP)));
 
-            List<Game> allSetupGames = partitionedGames.get(true);
-            List<Game> allActiveGames = partitionedGames.get(false);
+            var partitionedGameConfigPairs = groups.stream()
+                    .flatMap(group -> group.retrieveAllGames().complete().stream())
+                    .filter(game -> enabledConfigs.stream().anyMatch(c -> c.identifier().equals(game.identifier())))
+                    .map(game -> {
+                        var config = enabledConfigs.stream()
+                                .filter(c -> c.identifier().equals(game.identifier()))
+                                .findFirst()
+                                .orElse(null); // TODO: Handle properly, but should never happen anyway
+                        return new AbstractMap.SimpleEntry<>(game, config);
+                    })
+                    .collect(Collectors.partitioningBy(entry -> entry.getKey().phase().equals(GamePhase.SETUP)));
+
+            List<AbstractMap.SimpleEntry<Game, AutomaticPingConfig>> setupGamePairs = partitionedGameConfigPairs.get(true);
+            List<AbstractMap.SimpleEntry<Game, AutomaticPingConfig>> activeGamePairs = partitionedGameConfigPairs.get(false);
+            
         } catch(IOException e) {
             System.err.println("Error reading directory: " + e.getMessage());
         }
