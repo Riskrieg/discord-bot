@@ -16,10 +16,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,6 +26,12 @@ public class AutomaticPingService implements Service {
 
     public static Duration MIN_PING_INTERVAL = Duration.of(1, ChronoUnit.HOURS);
     public static Duration MAX_PING_INTERVAL = Duration.of(7, ChronoUnit.DAYS);
+
+    private List<ScheduledExecutorService> executorServices;
+
+    public AutomaticPingService() {
+        this.executorServices = new ArrayList<>();
+    }
 
     @Override
     public String name() {
@@ -88,14 +93,16 @@ public class AutomaticPingService implements Service {
                 Game game = pair.getKey();
                 AutomaticPingConfig config = pair.getValue();
 
-
+                ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
             }
+
+            // TODO: Need to handle the case where the game goes from SETUP to ACTIVE, have to update executor
 
             for(var pair : activeGamePairs) {
                 Game game = pair.getKey();
                 AutomaticPingConfig config = pair.getValue();
 
-
+                ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
             }
 
         } catch(IOException e) {
