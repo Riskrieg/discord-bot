@@ -6,7 +6,9 @@ import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.game.Game;
 import com.riskrieg.core.api.game.GamePhase;
+import com.riskrieg.core.api.game.entity.nation.Nation;
 import com.riskrieg.core.api.group.Group;
+import com.riskrieg.core.api.identifier.PlayerIdentifier;
 import com.riskrieg.core.util.io.RkJsonUtil;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -93,6 +95,10 @@ public class AutomaticPingService implements Service {
                 Game game = pair.getKey();
                 AutomaticPingConfig config = pair.getValue();
 
+                Set<PlayerIdentifier> playersToPing = game.nations().stream().filter(nation -> game.claims().stream().noneMatch(claim -> nation.identifier().equals(claim.identifier())))
+                        .map(Nation::leaderIdentifier)
+                        .collect(Collectors.toSet());
+
                 ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
             }
 
@@ -102,7 +108,12 @@ public class AutomaticPingService implements Service {
                 Game game = pair.getKey();
                 AutomaticPingConfig config = pair.getValue();
 
-                ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
+                game.getCurrentPlayer().ifPresent(player -> {
+                    PlayerIdentifier playerToPing = player.identifier();
+
+                    ScheduledExecutorService pingService = Executors.newSingleThreadScheduledExecutor();
+                    // TODO: Schedule service. Need instance of JDA API in order to do this properly.
+                });
             }
 
         } catch(IOException e) {
