@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +24,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AutomaticPingService implements Service {
+
+    public static Duration MIN_PING_INTERVAL = Duration.of(1, ChronoUnit.HOURS);
+    public static Duration MAX_PING_INTERVAL = Duration.of(7, ChronoUnit.DAYS);
 
     @Override
     public String name() {
@@ -78,6 +83,20 @@ public class AutomaticPingService implements Service {
 
             List<ImmutablePair<Game, AutomaticPingConfig>> setupGamePairs = partitionedGameConfigPairs.get(true);
             List<ImmutablePair<Game, AutomaticPingConfig>> activeGamePairs = partitionedGameConfigPairs.get(false);
+
+            for(var pair : setupGamePairs) {
+                Game game = pair.getKey();
+                AutomaticPingConfig config = pair.getValue();
+
+
+            }
+
+            for(var pair : activeGamePairs) {
+                Game game = pair.getKey();
+                AutomaticPingConfig config = pair.getValue();
+
+
+            }
 
         } catch(IOException e) {
             System.err.println("Error reading directory: " + e.getMessage());
