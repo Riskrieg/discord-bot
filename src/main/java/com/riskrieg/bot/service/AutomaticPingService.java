@@ -2,19 +2,19 @@ package com.riskrieg.bot.service;
 
 import com.riskrieg.bot.BotConstants;
 import com.riskrieg.bot.config.service.AutomaticPingConfig;
+import com.riskrieg.bot.util.Interval;
 import com.riskrieg.core.api.Riskrieg;
 import com.riskrieg.core.api.RiskriegBuilder;
 import com.riskrieg.core.api.game.Game;
 import com.riskrieg.core.api.game.GamePhase;
 import com.riskrieg.core.api.game.entity.nation.Nation;
 import com.riskrieg.core.api.group.Group;
+import com.riskrieg.core.api.identifier.GameIdentifier;
 import com.riskrieg.core.api.identifier.PlayerIdentifier;
 import com.riskrieg.core.util.io.RkJsonUtil;
-import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.sharding.ShardManager;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -22,23 +22,26 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AutomaticPingService implements Service {
 
-    public static Duration MIN_PING_INTERVAL = Duration.of(1, ChronoUnit.HOURS);
-    public static Duration MAX_PING_INTERVAL = Duration.of(7, ChronoUnit.DAYS);
+    public static Interval MIN_PING_INTERVAL = new Interval(1, TimeUnit.SECONDS);
+    public static Interval MAX_PING_INTERVAL = new Interval(7, TimeUnit.DAYS);
 
-    private List<ScheduledExecutorService> executorServices;
+    private final ConcurrentHashMap<String, ScheduledExecutorService> services;
 
     public AutomaticPingService() {
-        this.executorServices = new ArrayList<>();
+        this.services = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -110,13 +113,17 @@ public class AutomaticPingService implements Service {
                 if(guild != null) {
                     TextChannel channel = guild.getChannelById(TextChannel.class, config.identifier().id());
                     if(channel != null) {
-                        // Set up repeated ping action
+                        createService(game.identifier(), config, () -> {
+                            Set<String> mentionableMembers = playersToPing.stream().map(id -> guild.retrieveMemberById(id).complete()).map(Member::getAsMention).collect(Collectors.toSet());
+                            channel.sendMessage("Finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
+                        });
                     }
                 }
 
             }
 
             // TODO: Need to handle the case where the game goes from SETUP to ACTIVE, have to update executor
+            // TODO: Shutdown and remove tasks when a game ends.
 
             for(var pair : activeGamePairs) {
                 Game game = pair.getKey();
@@ -125,13 +132,14 @@ public class AutomaticPingService implements Service {
                 game.getCurrentPlayer().ifPresent(player -> {
                     PlayerIdentifier playerToPing = player.identifier();
 
-                    //ScheduledExecutorService pingService = Executors.newSingleThreadScheduledExecutor();
-
                     Guild guild = manager.getGuildCache().getElementById(config.guildId());
                     if(guild != null) {
                         TextChannel channel = guild.getChannelById(TextChannel.class, config.identifier().id());
                         if(channel != null) {
-                            // Set up repeated ping action
+                            createService(game.identifier(), config, () -> {
+                                String mention = guild.retrieveMemberById(playerToPing.id()).complete().getAsMention();
+                                channel.sendMessage("Reminder that it is your turn " + mention + ".").queue();
+                            });
                         }
                     }
 
@@ -144,5 +152,28 @@ public class AutomaticPingService implements Service {
 
         System.out.println("\r[Services] " + name() + " service running.");
     }
+
+    private ScheduledExecutorService getService(GameIdentifier identifier) {
+        return services.get(identifier.id()); // Null if service with ID doesn't exist
+    }
+
+    // TODO: Properly calculate initial delay based on game's last update time/lastPing, and also update lastPing accordingly
+    private void createService(GameIdentifier identifier, AutomaticPingConfig config, Runnable task) {
+        if(services.containsKey(identifier.id())) {
+            return;
+        }
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        service.scheduleAtFixedRate(task, 0, config.interval().period(), config.interval().unit());
+        services.put(identifier.id(), service);
+    }
+
+    private ScheduledExecutorService retrieveService(GameIdentifier identifier, AutomaticPingConfig config, Runnable task) {
+        return services.computeIfAbsent(identifier.id(), id -> {
+            ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+            service.scheduleAtFixedRate(task, 0, config.interval().period(), config.interval().unit());
+            return service;
+        });
+    }
+
 
 }
