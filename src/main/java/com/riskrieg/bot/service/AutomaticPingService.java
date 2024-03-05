@@ -86,6 +86,8 @@ public class AutomaticPingService implements Service {
 
             Collection<Group> groups = api.retrieveAllGroups().complete();
 
+            // TODO: On startup, the config lastPing should be updated to be the later of lastPing or game.updatedTime()
+
             // Load all games with configs, and partition the games into setup phase and active phase
             var gameConfigPairs = groups.stream()
                     .flatMap(group -> group.retrieveAllGames().complete().stream())
@@ -111,8 +113,8 @@ public class AutomaticPingService implements Service {
                         Group group = api.retrieveGroup(GroupIdentifier.of(String.valueOf(config.guildId()))).complete();
                         Game game = group.retrieveGame(identifier).complete();
                         switch(game.phase()) {
-                            case GamePhase.SETUP -> createTask(game.identifier(), config, runSetup(group, identifier, guild, channel, config));
-                            case GamePhase.ACTIVE -> createTask(game.identifier(), config, runActive(group, identifier, guild, channel));
+                            case GamePhase.SETUP -> createTask(config, runSetup(group, identifier, guild, channel, config));
+                            case GamePhase.ACTIVE -> createTask(config, runActive(group, identifier, guild, channel));
                             default -> {}
                         }
                     }
@@ -136,7 +138,7 @@ public class AutomaticPingService implements Service {
                 System.out.println("game loaded");
                 if(currentGame.phase().equals(GamePhase.ACTIVE)) { // Switch tasks when phase changes
                     endTask(identifier);
-                    createTask(identifier, config, runActive(group, identifier, guild, channel));
+                    createTask(config, runActive(group, identifier, guild, channel));
                     return;
                 }
                 Set<String> mentionableMembers = currentGame.nations().stream().filter(nation -> currentGame.claims().stream().noneMatch(claim -> nation.identifier().equals(claim.identifier())))
@@ -147,6 +149,7 @@ public class AutomaticPingService implements Service {
                         .collect(Collectors.toSet());
                 if(!mentionableMembers.isEmpty()) {
                     channel.sendMessage("Finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
+                    updateLastPing(group, identifier, Instant.now());
                 }
             } catch(Exception e) {
                 System.out.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task.");
@@ -164,21 +167,33 @@ public class AutomaticPingService implements Service {
                 currentGame.getCurrentPlayer().ifPresent(player -> {
                     String mention = guild.retrieveMemberById(player.identifier().id()).complete().getAsMention();
                     channel.sendMessage("Reminder that it is your turn " + mention + ".").queue();
+                    updateLastPing(group, identifier, Instant.now());
                 });
             } catch(Exception e) {
-                System.out.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task.");
+                System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task with error: " + e.getMessage());
                 endTask(identifier);
             }
         };
+    }
+
+    private void updateLastPing(Group group, GameIdentifier identifier, Instant instant) {
+        try {
+            Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
+            AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
+            if(config != null) {
+                RkJsonUtil.write(path, AutomaticPingConfig.class, config.withLastPing(instant));
+            }
+        } catch (IOException e) {
+            System.err.println("\r[Services] " + name() + " service failed to update 'lastPing' parameter with config ID " + identifier.id() + ". Error: " + e.getMessage());
+        }
     }
 
     private ScheduledExecutorService getTask(GameIdentifier identifier) {
         return services.get(identifier.id()); // Null if service with ID doesn't exist
     }
 
-    // TODO: Properly calculate initial delay based on game's last update time/lastPing, and also update lastPing accordingly
-    private void createTask(GameIdentifier identifier, AutomaticPingConfig config, Runnable task) {
-        if(services.containsKey(identifier.id())) {
+    private void createTask(AutomaticPingConfig config, Runnable task) {
+        if(services.containsKey(config.identifier().id())) {
             return;
         }
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
@@ -191,7 +206,7 @@ public class AutomaticPingService implements Service {
             initialDelay = config.interval().asMinutes() - minutesSinceLastPing;
         }
         service.scheduleAtFixedRate(task, initialDelay, config.interval().asMinutes(), TimeUnit.MINUTES);
-        services.put(identifier.id(), service);
+        services.put(config.identifier().id(), service);
     }
 
     private ScheduledExecutorService retrieveTask(GameIdentifier identifier, AutomaticPingConfig config, Runnable task) {
