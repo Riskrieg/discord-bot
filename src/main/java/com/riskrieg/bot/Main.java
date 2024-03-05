@@ -30,11 +30,7 @@ import com.riskrieg.bot.command.commands.riskrieg.restricted.owner.AddMap;
 import com.riskrieg.bot.command.commands.riskrieg.restricted.owner.AdjustMap;
 import com.riskrieg.bot.command.commands.riskrieg.restricted.server.End;
 import com.riskrieg.bot.command.commands.riskrieg.restricted.server.Kick;
-import com.riskrieg.bot.command.commands.riskrieg.running.ClaimCommand;
-import com.riskrieg.bot.command.commands.riskrieg.running.Palette;
-import com.riskrieg.bot.command.commands.riskrieg.running.Skip;
-import com.riskrieg.bot.command.commands.riskrieg.running.Stats;
-import com.riskrieg.bot.command.commands.riskrieg.running.Turn;
+import com.riskrieg.bot.command.commands.riskrieg.running.*;
 import com.riskrieg.bot.command.commands.riskrieg.running.alliances.Ally;
 import com.riskrieg.bot.command.commands.riskrieg.running.alliances.ListAlliances;
 import com.riskrieg.bot.command.commands.riskrieg.running.alliances.Unally;
@@ -43,20 +39,16 @@ import com.riskrieg.bot.command.commands.riskrieg.setup.Join;
 import com.riskrieg.bot.command.commands.riskrieg.setup.MapSelect;
 import com.riskrieg.bot.command.commands.riskrieg.setup.Start;
 import com.riskrieg.bot.command.handler.InteractionHandler;
-import com.riskrieg.bot.config.service.AutomaticPingConfig;
 import com.riskrieg.bot.listener.InteractionListener;
 import com.riskrieg.bot.listener.ReadyListener;
 import com.riskrieg.bot.service.AutomaticPingService;
 import com.riskrieg.bot.service.AutomaticSkipService;
-import com.riskrieg.core.api.identifier.GameIdentifier;
 import com.riskrieg.core.util.io.RkJsonUtil;
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
+
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Set;
 
 public class Main { // TODO: Add command that lets you see a territory's neighbors
