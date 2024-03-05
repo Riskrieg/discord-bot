@@ -152,7 +152,7 @@ public class AutomaticPingService implements Service {
                     updateLastPing(group, identifier, Instant.now());
                 }
             } catch(Exception e) {
-                System.out.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task.");
+                System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task with error: " + e.getMessage());
                 endTask(identifier);
             }
         };
