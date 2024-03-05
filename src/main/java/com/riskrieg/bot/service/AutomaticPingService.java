@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -109,33 +108,10 @@ public class AutomaticPingService implements Service {
                     if(channel != null) {
                         Group group = api.retrieveGroup(GroupIdentifier.of(String.valueOf(config.guildId()))).complete();
                         Game game = group.retrieveGame(identifier).complete();
-                        switch(game.phase()) { // TODO: Need to handle the case where the game goes from SETUP to ACTIVE, have to update executor
-                            case GamePhase.SETUP -> {
-                                createService(game.identifier(), config, () -> {
-                                    Game currentGame = group.retrieveGame(identifier).complete();
-                                    Set<String> mentionableMembers = currentGame.nations().stream().filter(nation -> currentGame.claims().stream().noneMatch(claim -> nation.identifier().equals(claim.identifier())))
-                                            .map(Nation::leaderIdentifier)
-                                            .map(PlayerIdentifier::id)
-                                            .map(id -> guild.retrieveMemberById(id).complete())
-                                            .map(Member::getAsMention)
-                                            .collect(Collectors.toSet());
-                                    if(!mentionableMembers.isEmpty()) {
-                                        channel.sendMessage("Finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
-                                    }
-                                });
-                            }
-                            case GamePhase.ACTIVE -> {
-                                createService(game.identifier(), config, () -> {
-                                    Game currentGame = group.retrieveGame(identifier).complete();
-                                    currentGame.getCurrentPlayer().ifPresent(player -> {
-                                        String mention = guild.retrieveMemberById(player.identifier().id()).complete().getAsMention();
-                                        channel.sendMessage("Reminder that it is your turn " + mention + ".").queue();
-                                    });
-                                });
-                            }
-                            default -> {
-
-                            }
+                        switch(game.phase()) {
+                            case GamePhase.SETUP -> createService(game.identifier(), config, runSetup(group, identifier, guild, channel, config));
+                            case GamePhase.ACTIVE -> createService(game.identifier(), config, runActive(group, identifier, guild, channel));
+                            default -> {}
                         }
                     }
                 }
@@ -148,6 +124,39 @@ public class AutomaticPingService implements Service {
         }
 
         System.out.println("\r[Services] " + name() + " service running.");
+    }
+
+    private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, TextChannel channel, AutomaticPingConfig config) {
+        return () -> {
+            Game currentGame = group.retrieveGame(identifier).complete();
+            if(currentGame.phase().equals(GamePhase.ACTIVE)) {
+                try (var service = services.remove(currentGame.identifier().id())) {
+                    if(service != null) {
+                        service.shutdown();
+                        createService(identifier, config, runActive(group, identifier, guild, channel));
+                    }
+                }
+            }
+            Set<String> mentionableMembers = currentGame.nations().stream().filter(nation -> currentGame.claims().stream().noneMatch(claim -> nation.identifier().equals(claim.identifier())))
+                    .map(Nation::leaderIdentifier)
+                    .map(PlayerIdentifier::id)
+                    .map(id -> guild.retrieveMemberById(id).complete())
+                    .map(Member::getAsMention)
+                    .collect(Collectors.toSet());
+            if(!mentionableMembers.isEmpty()) {
+                channel.sendMessage("Finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
+            }
+        };
+    }
+
+    private Runnable runActive(Group group, GameIdentifier identifier, Guild guild, TextChannel channel) {
+        return () -> {
+            Game currentGame = group.retrieveGame(identifier).complete();
+            currentGame.getCurrentPlayer().ifPresent(player -> {
+                String mention = guild.retrieveMemberById(player.identifier().id()).complete().getAsMention();
+                channel.sendMessage("Reminder that it is your turn " + mention + ".").queue();
+            });
+        };
     }
 
     private ScheduledExecutorService getService(GameIdentifier identifier) {
