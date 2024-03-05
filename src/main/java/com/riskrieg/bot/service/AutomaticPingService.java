@@ -122,18 +122,19 @@ public class AutomaticPingService implements Service {
         } catch(IOException e) {
             System.err.println("Error reading directory: " + e.getMessage());
         }
-
-        System.out.println("\r[Services] " + name() + " service running.");
+        String tasks = services.size() == 1 ? "task" : "tasks";
+        System.out.println("\r[Services] " + name() + " service running with " + services.size() + " " + tasks + ".");
     }
 
     private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, TextChannel channel, AutomaticPingConfig config) {
         return () -> {
             Game currentGame = group.retrieveGame(identifier).complete();
-            if(currentGame.phase().equals(GamePhase.ACTIVE)) {
+            if(currentGame.phase().equals(GamePhase.ACTIVE)) { // Switch tasks when phase changes
                 try (var service = services.remove(currentGame.identifier().id())) {
                     if(service != null) {
                         service.shutdown();
                         createService(identifier, config, runActive(group, identifier, guild, channel));
+                        return;
                     }
                 }
             }
