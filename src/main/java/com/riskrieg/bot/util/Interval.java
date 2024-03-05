@@ -7,6 +7,10 @@ import java.util.concurrent.TimeUnit;
 
 public record Interval(long period, TimeUnit unit) implements Comparable<Interval> {
 
+    public long asMinutes() {
+        return unit.toMinutes(period);
+    }
+
     @Override
     public int compareTo(@NotNull Interval o) {
         BigInteger thisInterval = convert(this);

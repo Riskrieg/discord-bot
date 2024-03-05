@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 
 public class AutomaticPingService implements Service {
 
-    public static Interval MIN_PING_INTERVAL = new Interval(1, TimeUnit.SECONDS);
+    public static Interval MIN_PING_INTERVAL = new Interval(30, TimeUnit.MINUTES);
     public static Interval MAX_PING_INTERVAL = new Interval(7, TimeUnit.DAYS);
 
     private final ConcurrentHashMap<String, ScheduledExecutorService> services;
@@ -182,8 +182,15 @@ public class AutomaticPingService implements Service {
             return;
         }
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        //Duration initialDelay = Duration.between(config.lastPing(), Instant.now());
-        service.scheduleAtFixedRate(task, 0, config.interval().period(), config.interval().unit());
+        // Initial delay has to be the same unit as period, so convert to minutes to account for minimum period being 30 minutes.
+        long minutesSinceLastPing = Duration.between(config.lastPing(), Instant.now()).toMinutes();
+        long initialDelay;
+        if(minutesSinceLastPing >= config.interval().asMinutes()) {
+            initialDelay = 0;
+        } else {
+            initialDelay = config.interval().asMinutes() - minutesSinceLastPing;
+        }
+        service.scheduleAtFixedRate(task, initialDelay, config.interval().asMinutes(), TimeUnit.MINUTES);
         services.put(identifier.id(), service);
     }
 
