@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
@@ -109,8 +111,8 @@ public class AutomaticPingService implements Service {
                         Group group = api.retrieveGroup(GroupIdentifier.of(String.valueOf(config.guildId()))).complete();
                         Game game = group.retrieveGame(identifier).complete();
                         switch(game.phase()) {
-                            case GamePhase.SETUP -> createService(game.identifier(), config, runSetup(group, identifier, guild, channel, config));
-                            case GamePhase.ACTIVE -> createService(game.identifier(), config, runActive(group, identifier, guild, channel));
+                            case GamePhase.SETUP -> createTask(game.identifier(), config, runSetup(group, identifier, guild, channel, config));
+                            case GamePhase.ACTIVE -> createTask(game.identifier(), config, runActive(group, identifier, guild, channel));
                             default -> {}
                         }
                     }
@@ -128,58 +130,78 @@ public class AutomaticPingService implements Service {
 
     private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, TextChannel channel, AutomaticPingConfig config) {
         return () -> {
-            Game currentGame = group.retrieveGame(identifier).complete();
-            if(currentGame.phase().equals(GamePhase.ACTIVE)) { // Switch tasks when phase changes
-                try (var service = services.remove(currentGame.identifier().id())) {
-                    if(service != null) {
-                        service.shutdown();
-                        createService(identifier, config, runActive(group, identifier, guild, channel));
-                        return;
-                    }
+            try {
+                System.out.println("attempting to load game...");
+                Game currentGame = group.retrieveGame(identifier).complete();
+                System.out.println("game loaded");
+                if(currentGame.phase().equals(GamePhase.ACTIVE)) { // Switch tasks when phase changes
+                    endTask(identifier);
+                    createTask(identifier, config, runActive(group, identifier, guild, channel));
+                    return;
                 }
-            }
-            Set<String> mentionableMembers = currentGame.nations().stream().filter(nation -> currentGame.claims().stream().noneMatch(claim -> nation.identifier().equals(claim.identifier())))
-                    .map(Nation::leaderIdentifier)
-                    .map(PlayerIdentifier::id)
-                    .map(id -> guild.retrieveMemberById(id).complete())
-                    .map(Member::getAsMention)
-                    .collect(Collectors.toSet());
-            if(!mentionableMembers.isEmpty()) {
-                channel.sendMessage("Finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
+                Set<String> mentionableMembers = currentGame.nations().stream().filter(nation -> currentGame.claims().stream().noneMatch(claim -> nation.identifier().equals(claim.identifier())))
+                        .map(Nation::leaderIdentifier)
+                        .map(PlayerIdentifier::id)
+                        .map(id -> guild.retrieveMemberById(id).complete())
+                        .map(Member::getAsMention)
+                        .collect(Collectors.toSet());
+                if(!mentionableMembers.isEmpty()) {
+                    channel.sendMessage("Finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
+                }
+            } catch(Exception e) {
+                System.out.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task.");
+                endTask(identifier);
             }
         };
     }
 
     private Runnable runActive(Group group, GameIdentifier identifier, Guild guild, TextChannel channel) {
         return () -> {
-            Game currentGame = group.retrieveGame(identifier).complete();
-            currentGame.getCurrentPlayer().ifPresent(player -> {
-                String mention = guild.retrieveMemberById(player.identifier().id()).complete().getAsMention();
-                channel.sendMessage("Reminder that it is your turn " + mention + ".").queue();
-            });
+            try {
+                System.out.println("attempting to load game...");
+                Game currentGame = group.retrieveGame(identifier).complete();
+                System.out.println("game loaded");
+                currentGame.getCurrentPlayer().ifPresent(player -> {
+                    String mention = guild.retrieveMemberById(player.identifier().id()).complete().getAsMention();
+                    channel.sendMessage("Reminder that it is your turn " + mention + ".").queue();
+                });
+            } catch(Exception e) {
+                System.out.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task.");
+                endTask(identifier);
+            }
         };
     }
 
-    private ScheduledExecutorService getService(GameIdentifier identifier) {
+    private ScheduledExecutorService getTask(GameIdentifier identifier) {
         return services.get(identifier.id()); // Null if service with ID doesn't exist
     }
 
     // TODO: Properly calculate initial delay based on game's last update time/lastPing, and also update lastPing accordingly
-    private void createService(GameIdentifier identifier, AutomaticPingConfig config, Runnable task) {
+    private void createTask(GameIdentifier identifier, AutomaticPingConfig config, Runnable task) {
         if(services.containsKey(identifier.id())) {
             return;
         }
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        //Duration initialDelay = Duration.between(config.lastPing(), Instant.now());
         service.scheduleAtFixedRate(task, 0, config.interval().period(), config.interval().unit());
         services.put(identifier.id(), service);
     }
 
-    private ScheduledExecutorService retrieveService(GameIdentifier identifier, AutomaticPingConfig config, Runnable task) {
+    private ScheduledExecutorService retrieveTask(GameIdentifier identifier, AutomaticPingConfig config, Runnable task) {
         return services.computeIfAbsent(identifier.id(), id -> {
             ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
             service.scheduleAtFixedRate(task, 0, config.interval().period(), config.interval().unit());
             return service;
         });
+    }
+
+    private void endTask(GameIdentifier identifier) { // TODO: Edit config to disable PingService on ID
+        try (var service = services.remove(identifier.id())) {
+            if(service != null) {
+                System.out.println(services.size());
+                service.shutdown();
+            }
+        }
     }
 
 
