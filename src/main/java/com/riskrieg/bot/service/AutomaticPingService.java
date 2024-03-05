@@ -10,6 +10,7 @@ import com.riskrieg.core.api.game.GamePhase;
 import com.riskrieg.core.api.game.entity.nation.Nation;
 import com.riskrieg.core.api.group.Group;
 import com.riskrieg.core.api.identifier.GameIdentifier;
+import com.riskrieg.core.api.identifier.GroupIdentifier;
 import com.riskrieg.core.api.identifier.PlayerIdentifier;
 import com.riskrieg.core.util.io.RkJsonUtil;
 import net.dv8tion.jda.api.entities.Guild;
@@ -85,66 +86,62 @@ public class AutomaticPingService implements Service {
             Collection<Group> groups = api.retrieveAllGroups().complete();
 
             // Load all games with configs, and partition the games into setup phase and active phase
-            var partitionedGameConfigPairs = groups.stream()
+            var gameConfigPairs = groups.stream()
                     .flatMap(group -> group.retrieveAllGames().complete().stream())
-                    .filter(game -> enabledConfigs.stream().anyMatch(c -> c.identifier().equals(game.identifier())))
-                    .map(game -> {
+                    .map(Game::identifier)
+                    .filter(gameId -> enabledConfigs.stream().anyMatch(c -> c.identifier().equals(gameId)))
+                    .map(gameId -> {
                         var config = enabledConfigs.stream()
-                                .filter(c -> c.identifier().equals(game.identifier()))
+                                .filter(c -> c.identifier().equals(gameId))
                                 .findFirst()
                                 .orElse(null); // TODO: Handle properly, but should never happen anyway
-                        return new ImmutablePair<>(game, config);
+                        return new ImmutablePair<>(gameId, config);
                     })
-                    .collect(Collectors.partitioningBy(entry -> entry.getKey().phase().equals(GamePhase.SETUP)));
+                    .collect(Collectors.toSet());
 
-            List<ImmutablePair<Game, AutomaticPingConfig>> setupGamePairs = partitionedGameConfigPairs.get(true);
-            List<ImmutablePair<Game, AutomaticPingConfig>> activeGamePairs = partitionedGameConfigPairs.get(false);
-
-            for(var pair : setupGamePairs) {
-                Game game = pair.getKey();
+            for(var pair : gameConfigPairs) {
+                GameIdentifier identifier = pair.getKey();
                 AutomaticPingConfig config = pair.getValue();
-
-                Set<String> playersToPing = game.nations().stream().filter(nation -> game.claims().stream().noneMatch(claim -> nation.identifier().equals(claim.identifier())))
-                        .map(Nation::leaderIdentifier)
-                        .map(PlayerIdentifier::id)
-                        .collect(Collectors.toSet());
 
                 Guild guild = manager.getGuildCache().getElementById(config.guildId());
                 if(guild != null) {
                     TextChannel channel = guild.getChannelById(TextChannel.class, config.identifier().id());
                     if(channel != null) {
-                        createService(game.identifier(), config, () -> {
-                            Set<String> mentionableMembers = playersToPing.stream().map(id -> guild.retrieveMemberById(id).complete()).map(Member::getAsMention).collect(Collectors.toSet());
-                            channel.sendMessage("Finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
-                        });
-                    }
-                }
+                        Group group = api.retrieveGroup(GroupIdentifier.of(String.valueOf(config.guildId()))).complete();
+                        Game game = group.retrieveGame(identifier).complete();
+                        switch(game.phase()) { // TODO: Need to handle the case where the game goes from SETUP to ACTIVE, have to update executor
+                            case GamePhase.SETUP -> {
+                                createService(game.identifier(), config, () -> {
+                                    Game currentGame = group.retrieveGame(identifier).complete();
+                                    Set<String> mentionableMembers = currentGame.nations().stream().filter(nation -> currentGame.claims().stream().noneMatch(claim -> nation.identifier().equals(claim.identifier())))
+                                            .map(Nation::leaderIdentifier)
+                                            .map(PlayerIdentifier::id)
+                                            .map(id -> guild.retrieveMemberById(id).complete())
+                                            .map(Member::getAsMention)
+                                            .collect(Collectors.toSet());
+                                    if(!mentionableMembers.isEmpty()) {
+                                        channel.sendMessage("Finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
+                                    }
+                                });
+                            }
+                            case GamePhase.ACTIVE -> {
+                                createService(game.identifier(), config, () -> {
+                                    Game currentGame = group.retrieveGame(identifier).complete();
+                                    currentGame.getCurrentPlayer().ifPresent(player -> {
+                                        String mention = guild.retrieveMemberById(player.identifier().id()).complete().getAsMention();
+                                        channel.sendMessage("Reminder that it is your turn " + mention + ".").queue();
+                                    });
+                                });
+                            }
+                            default -> {
 
-            }
-
-            // TODO: Need to handle the case where the game goes from SETUP to ACTIVE, have to update executor
-            // TODO: Shutdown and remove tasks when a game ends.
-
-            for(var pair : activeGamePairs) {
-                Game game = pair.getKey();
-                AutomaticPingConfig config = pair.getValue();
-
-                game.getCurrentPlayer().ifPresent(player -> {
-                    PlayerIdentifier playerToPing = player.identifier();
-
-                    Guild guild = manager.getGuildCache().getElementById(config.guildId());
-                    if(guild != null) {
-                        TextChannel channel = guild.getChannelById(TextChannel.class, config.identifier().id());
-                        if(channel != null) {
-                            createService(game.identifier(), config, () -> {
-                                String mention = guild.retrieveMemberById(playerToPing.id()).complete().getAsMention();
-                                channel.sendMessage("Reminder that it is your turn " + mention + ".").queue();
-                            });
+                            }
                         }
                     }
-
-                });
+                }
             }
+
+            // TODO: Shutdown and remove tasks when a game ends.
 
         } catch(IOException e) {
             System.err.println("Error reading directory: " + e.getMessage());
