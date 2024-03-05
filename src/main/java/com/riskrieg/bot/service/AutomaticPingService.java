@@ -198,7 +198,6 @@ public class AutomaticPingService implements Service {
     private void endTask(GameIdentifier identifier) { // TODO: Edit config to disable PingService on ID
         try (var service = services.remove(identifier.id())) {
             if(service != null) {
-                System.out.println(services.size());
                 service.shutdown();
             }
         }
