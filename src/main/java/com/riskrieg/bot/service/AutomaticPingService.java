@@ -86,8 +86,6 @@ public class AutomaticPingService implements Service {
 
             Collection<Group> groups = api.retrieveAllGroups().complete();
 
-            // TODO: On startup, the config lastPing should be updated to be the later of lastPing or game.updatedTime()
-
             // Load all games with configs, and partition the games into setup phase and active phase
             var gameConfigPairs = groups.stream()
                     .flatMap(group -> group.retrieveAllGames().complete().stream())
@@ -108,10 +106,14 @@ public class AutomaticPingService implements Service {
 
                 Guild guild = manager.getGuildCache().getElementById(config.guildId());
                 if(guild != null) {
+                    Group group = api.retrieveGroup(GroupIdentifier.of(String.valueOf(config.guildId()))).complete();
                     TextChannel channel = guild.getChannelById(TextChannel.class, config.identifier().id());
                     if(channel != null) {
-                        Group group = api.retrieveGroup(GroupIdentifier.of(String.valueOf(config.guildId()))).complete();
                         Game game = group.retrieveGame(identifier).complete();
+
+                        // Update lastPing to be the later of config.lastPing() or game.updatedTime()
+                        updateLastPing(group, identifier, game.updatedTime().isAfter(config.lastPing()) ? game.updatedTime() : config.lastPing());
+
                         switch(game.phase()) {
                             case GamePhase.SETUP -> createTask(config, runSetup(group, identifier, guild, channel, config));
                             case GamePhase.ACTIVE -> createTask(config, runActive(group, identifier, guild, channel));
