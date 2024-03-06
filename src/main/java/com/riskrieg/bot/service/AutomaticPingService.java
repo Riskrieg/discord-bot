@@ -137,7 +137,7 @@ public class AutomaticPingService implements Service {
             try {
                 Game currentGame = group.retrieveGame(identifier).complete();
                 if(currentGame.phase().equals(GamePhase.ACTIVE)) { // Switch tasks when phase changes
-                    endTask(identifier);
+                    endTask(group, identifier, false);
                     createTask(config, runActive(group, identifier, guild, channel));
                     return;
                 }
@@ -153,7 +153,7 @@ public class AutomaticPingService implements Service {
                 }
             } catch(Exception e) {
                 System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task with error: " + e.getMessage());
-                endTask(identifier);
+                endTask(group, identifier, true);
             }
         };
     }
@@ -169,28 +169,16 @@ public class AutomaticPingService implements Service {
                 });
             } catch(Exception e) {
                 System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task with error: " + e.getMessage());
-                endTask(identifier);
+                endTask(group, identifier, true);
             }
         };
-    }
-
-    private void updateConfigLastPing(Group group, GameIdentifier identifier, Instant instant) {
-        try {
-            Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
-            AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
-            if(config != null) {
-                RkJsonUtil.write(path, AutomaticPingConfig.class, config.withLastPing(instant));
-            }
-        } catch (IOException e) {
-            System.err.println("\r[Services] " + name() + " service failed to update 'lastPing' parameter with config ID " + identifier.id() + ". Error: " + e.getMessage());
-        }
     }
 
     private ScheduledExecutorService getTask(GameIdentifier identifier) {
         return services.get(identifier.id()); // Null if service with ID doesn't exist
     }
 
-    private void createTask(AutomaticPingConfig config, Runnable task) {
+    private void createTask(AutomaticPingConfig config, Runnable task) { // TODO: Check if config exists. If it does, set to enabled.
         if(services.containsKey(config.identifier().id())) {
             return;
         }
@@ -215,11 +203,36 @@ public class AutomaticPingService implements Service {
         });
     }
 
-    private void endTask(GameIdentifier identifier) { // TODO: Edit config to disable PingService on ID
+    private void endTask(Group group, GameIdentifier identifier, boolean disableConfig) {
         try (var service = services.remove(identifier.id())) {
             if(service != null) {
+                updateConfigEnabled(group, identifier, disableConfig);
                 service.shutdown();
             }
+        }
+    }
+
+    private void updateConfigLastPing(Group group, GameIdentifier identifier, Instant instant) {
+        try {
+            Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
+            AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
+            if(config != null) {
+                RkJsonUtil.write(path, AutomaticPingConfig.class, config.withLastPing(instant));
+            }
+        } catch (IOException e) {
+            System.err.println("\r[Services] " + name() + " service failed to update 'lastPing' parameter with config ID " + identifier.id() + ". Error: " + e.getMessage());
+        }
+    }
+
+    private void updateConfigEnabled(Group group, GameIdentifier identifier, boolean enabled) {
+        try {
+            Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
+            AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
+            if(config != null) {
+                RkJsonUtil.write(path, AutomaticPingConfig.class, config.withEnabled(enabled));
+            }
+        } catch (IOException e) {
+            System.err.println("\r[Services] " + name() + " service failed to update 'enabled' parameter with config ID " + identifier.id() + ". Error: " + e.getMessage());
         }
     }
 
