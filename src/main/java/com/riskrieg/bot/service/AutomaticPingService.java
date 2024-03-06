@@ -112,7 +112,7 @@ public class AutomaticPingService implements Service {
                         Game game = group.retrieveGame(identifier).complete();
 
                         // Update lastPing to be the later of config.lastPing() or game.updatedTime()
-                        updateLastPing(group, identifier, game.updatedTime().isAfter(config.lastPing()) ? game.updatedTime() : config.lastPing());
+                        updateConfigLastPing(group, identifier, game.updatedTime().isAfter(config.lastPing()) ? game.updatedTime() : config.lastPing());
 
                         switch(game.phase()) {
                             case GamePhase.SETUP -> createTask(config, runSetup(group, identifier, guild, channel, config));
@@ -151,7 +151,7 @@ public class AutomaticPingService implements Service {
                         .collect(Collectors.toSet());
                 if(!mentionableMembers.isEmpty()) {
                     channel.sendMessage("Finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
-                    updateLastPing(group, identifier, Instant.now());
+                    updateConfigLastPing(group, identifier, Instant.now());
                 }
             } catch(Exception e) {
                 System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task with error: " + e.getMessage());
@@ -169,7 +169,7 @@ public class AutomaticPingService implements Service {
                 currentGame.getCurrentPlayer().ifPresent(player -> {
                     String mention = guild.retrieveMemberById(player.identifier().id()).complete().getAsMention();
                     channel.sendMessage("Reminder that it is your turn " + mention + ".").queue();
-                    updateLastPing(group, identifier, Instant.now());
+                    updateConfigLastPing(group, identifier, Instant.now());
                 });
             } catch(Exception e) {
                 System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task with error: " + e.getMessage());
@@ -178,7 +178,7 @@ public class AutomaticPingService implements Service {
         };
     }
 
-    private void updateLastPing(Group group, GameIdentifier identifier, Instant instant) {
+    private void updateConfigLastPing(Group group, GameIdentifier identifier, Instant instant) {
         try {
             Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
             AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
