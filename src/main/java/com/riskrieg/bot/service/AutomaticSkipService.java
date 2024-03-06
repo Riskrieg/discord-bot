@@ -2,7 +2,7 @@ package com.riskrieg.bot.service;
 
 import net.dv8tion.jda.api.sharding.ShardManager;
 
-public class AutomaticSkipService implements Service {
+public class AutomaticSkipService implements StartableService {
 
     @Override
     public String name() {

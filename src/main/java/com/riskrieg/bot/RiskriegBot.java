@@ -19,7 +19,7 @@
 package com.riskrieg.bot;
 
 import com.riskrieg.bot.auth.Auth;
-import com.riskrieg.bot.service.Service;
+import com.riskrieg.bot.service.StartableService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
@@ -33,7 +33,7 @@ public class RiskriegBot implements Bot {
 
     private final Auth auth;
     private final DefaultShardManagerBuilder builder;
-    private final Set<Service> services;
+    private final Set<StartableService> services;
 
     public RiskriegBot(Auth auth) {
         this.auth = auth;
@@ -47,7 +47,7 @@ public class RiskriegBot implements Bot {
     }
 
     @Override
-    public void registerServices(@Nonnull Service... services) {
+    public void registerServices(@Nonnull StartableService... services) {
         this.services.addAll(Arrays.asList(services));
         System.out.println("\r[Services] " + this.services.size() + " local services registered.");
     }

@@ -35,15 +35,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AutomaticPingService implements Service {
+public class AutomaticPingService implements StartableService {
 
     public static Interval MIN_PING_INTERVAL = new Interval(30, TimeUnit.MINUTES);
     public static Interval MAX_PING_INTERVAL = new Interval(7, TimeUnit.DAYS);
 
-    private final ConcurrentHashMap<String, ScheduledExecutorService> tasks;
+    private static final ConcurrentHashMap<String, ScheduledExecutorService> tasks = new ConcurrentHashMap<>();
 
     public AutomaticPingService() {
-        this.tasks = new ConcurrentHashMap<>();
+
     }
 
     @Override
