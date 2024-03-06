@@ -135,9 +135,7 @@ public class AutomaticPingService implements Service {
     private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, TextChannel channel, AutomaticPingConfig config) {
         return () -> {
             try {
-                System.out.println("attempting to load game...");
                 Game currentGame = group.retrieveGame(identifier).complete();
-                System.out.println("game loaded");
                 if(currentGame.phase().equals(GamePhase.ACTIVE)) { // Switch tasks when phase changes
                     endTask(identifier);
                     createTask(config, runActive(group, identifier, guild, channel));
@@ -163,9 +161,7 @@ public class AutomaticPingService implements Service {
     private Runnable runActive(Group group, GameIdentifier identifier, Guild guild, TextChannel channel) {
         return () -> {
             try {
-                System.out.println("attempting to load game...");
                 Game currentGame = group.retrieveGame(identifier).complete();
-                System.out.println("game loaded");
                 currentGame.getCurrentPlayer().ifPresent(player -> {
                     String mention = guild.retrieveMemberById(player.identifier().id()).complete().getAsMention();
                     channel.sendMessage("Reminder that it is your turn " + mention + ".").queue();
