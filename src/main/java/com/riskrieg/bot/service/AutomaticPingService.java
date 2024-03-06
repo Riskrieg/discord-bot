@@ -148,7 +148,7 @@ public class AutomaticPingService implements Service {
                         .map(Member::getAsMention)
                         .collect(Collectors.toSet());
                 if(!mentionableMembers.isEmpty()) {
-                    channel.sendMessage("Finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
+                    channel.sendMessage("Reminder to finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
                     updateConfigLastPing(group, identifier, Instant.now());
                 }
             } catch(Exception e) {
