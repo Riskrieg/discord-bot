@@ -10,7 +10,7 @@ public class AutomaticSkipService implements Service {
     }
 
     @Override
-    public void run(ShardManager manager) {
+    public void start(ShardManager manager) {
         System.out.println("\r[Services] " + name() + " service running.");
     }
 

@@ -6,6 +6,6 @@ public interface Service {
 
     String name();
 
-    void run(ShardManager manager);
+    void start(ShardManager manager);
 
 }

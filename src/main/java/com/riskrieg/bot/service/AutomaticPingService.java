@@ -52,7 +52,7 @@ public class AutomaticPingService implements Service {
     }
 
     @Override
-    public void run(ShardManager manager) {
+    public void start(ShardManager manager) {
         // Load configs
         Path configDirectory = Paths.get(BotConstants.CONFIG_PATH + "service/automatic-ping");
         if(Files.notExists(configDirectory)) {

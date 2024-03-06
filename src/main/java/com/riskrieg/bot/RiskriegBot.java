@@ -21,14 +21,12 @@ package com.riskrieg.bot;
 import com.riskrieg.bot.auth.Auth;
 import com.riskrieg.bot.service.Service;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class RiskriegBot implements Bot {
@@ -63,7 +61,7 @@ public class RiskriegBot implements Bot {
                 shard.awaitReady();
             }
 
-            services.forEach(service -> service.run(manager));
+            services.forEach(service -> service.start(manager));
         } catch (Exception e) {
             e.printStackTrace();
         }
