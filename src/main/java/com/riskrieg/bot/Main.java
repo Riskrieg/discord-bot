@@ -30,6 +30,7 @@ import com.riskrieg.bot.command.commands.riskrieg.restricted.owner.AddMap;
 import com.riskrieg.bot.command.commands.riskrieg.restricted.owner.AdjustMap;
 import com.riskrieg.bot.command.commands.riskrieg.restricted.server.End;
 import com.riskrieg.bot.command.commands.riskrieg.restricted.server.Kick;
+import com.riskrieg.bot.command.commands.riskrieg.restricted.server.Services;
 import com.riskrieg.bot.command.commands.riskrieg.running.*;
 import com.riskrieg.bot.command.commands.riskrieg.running.alliances.Ally;
 import com.riskrieg.bot.command.commands.riskrieg.running.alliances.ListAlliances;
@@ -66,6 +67,9 @@ public class Main { // TODO: Add command that lets you see a territory's neighbo
 
       System.out.print("[Startup] Registering commands locally...");
       InteractionHandler handler = new InteractionHandler(auth.ownerId());
+
+      AutomaticPingService pingService = new AutomaticPingService();
+
       Set<Command> commands = Set.of(
           new Ping(),
 
@@ -97,7 +101,9 @@ public class Main { // TODO: Add command that lets you see a territory's neighbo
           new AddMap(),
           new AdjustMap(),
 
-          new AdjustConfig()
+          new AdjustConfig(),
+
+          new Services(pingService)
       );
       handler.registerCommands(commands);
       System.out.println("\r[Startup] " + commands.size() + (commands.size() == 1 ? " command" : " commands") + " registered locally.");
@@ -110,7 +116,7 @@ public class Main { // TODO: Add command that lets you see a territory's neighbo
 
       // Register services
       bot.registerServices(
-              new AutomaticPingService(),
+              pingService,
               new AutomaticSkipService()
       );
 
