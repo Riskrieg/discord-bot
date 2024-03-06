@@ -178,7 +178,7 @@ public class AutomaticPingService implements Service {
         return services.get(identifier.id()); // Null if service with ID doesn't exist
     }
 
-    private void createTask(AutomaticPingConfig config, Runnable task) { // TODO: Check if config exists. If it does, set to enabled.
+    private void createTask(AutomaticPingConfig config, Runnable task) {
         if(services.containsKey(config.identifier().id())) {
             return;
         }
