@@ -137,7 +137,7 @@ public class AutomaticPingService implements Service {
             try {
                 Game currentGame = group.retrieveGame(identifier).complete();
                 if(currentGame.phase().equals(GamePhase.ACTIVE)) { // Switch tasks when phase changes
-                    endTask(group, identifier, false);
+                    endTask(group, identifier, true);
                     createTask(config, runActive(group, identifier, guild, channel));
                     return;
                 }
@@ -153,7 +153,7 @@ public class AutomaticPingService implements Service {
                 }
             } catch(Exception e) {
                 System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task with error: " + e.getMessage());
-                endTask(group, identifier, true);
+                endTask(group, identifier, false);
             }
         };
     }
@@ -169,7 +169,7 @@ public class AutomaticPingService implements Service {
                 });
             } catch(Exception e) {
                 System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task with error: " + e.getMessage());
-                endTask(group, identifier, true);
+                endTask(group, identifier, false);
             }
         };
     }
@@ -203,10 +203,10 @@ public class AutomaticPingService implements Service {
         });
     }
 
-    private void endTask(Group group, GameIdentifier identifier, boolean disableConfig) {
+    private void endTask(Group group, GameIdentifier identifier, boolean configEnabled) {
         try (var service = services.remove(identifier.id())) {
             if(service != null) {
-                updateConfigEnabled(group, identifier, disableConfig);
+                updateConfigEnabled(group, identifier, configEnabled);
                 service.shutdown();
             }
         }
