@@ -30,4 +30,8 @@ public record AutomaticPingConfig(long guildId, GameIdentifier identifier, boole
         return new AutomaticPingConfig(guildId, identifier, enabled, interval, lastPing);
     }
 
+    public AutomaticPingConfig withEnabled(boolean enabled) {
+        return new AutomaticPingConfig(guildId, identifier, enabled, interval, lastPing);
+    }
+
 }
