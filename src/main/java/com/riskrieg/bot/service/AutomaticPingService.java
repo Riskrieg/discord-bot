@@ -40,10 +40,10 @@ public class AutomaticPingService implements Service {
     public static Interval MIN_PING_INTERVAL = new Interval(30, TimeUnit.MINUTES);
     public static Interval MAX_PING_INTERVAL = new Interval(7, TimeUnit.DAYS);
 
-    private final ConcurrentHashMap<String, ScheduledExecutorService> services;
+    private final ConcurrentHashMap<String, ScheduledExecutorService> tasks;
 
     public AutomaticPingService() {
-        this.services = new ConcurrentHashMap<>();
+        this.tasks = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -128,8 +128,8 @@ public class AutomaticPingService implements Service {
         } catch(IOException e) {
             System.err.println("Error reading directory: " + e.getMessage());
         }
-        String tasks = services.size() == 1 ? "task" : "tasks";
-        System.out.println("\r[Services] " + name() + " service running with " + services.size() + " " + tasks + ".");
+        String tasks = this.tasks.size() == 1 ? "task" : "tasks";
+        System.out.println("\r[Services] " + name() + " service running with " + this.tasks.size() + " " + tasks + ".");
     }
 
     private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, TextChannel channel, AutomaticPingConfig config) {
@@ -175,11 +175,11 @@ public class AutomaticPingService implements Service {
     }
 
     private ScheduledExecutorService getTask(GameIdentifier identifier) {
-        return services.get(identifier.id()); // Null if service with ID doesn't exist
+        return tasks.get(identifier.id()); // Null if service with ID doesn't exist
     }
 
     private void createTask(AutomaticPingConfig config, Runnable task) {
-        if(services.containsKey(config.identifier().id())) {
+        if(tasks.containsKey(config.identifier().id())) {
             return;
         }
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
@@ -192,11 +192,11 @@ public class AutomaticPingService implements Service {
             initialDelay = config.interval().asMinutes() - minutesSinceLastPing;
         }
         service.scheduleAtFixedRate(task, initialDelay, config.interval().asMinutes(), TimeUnit.MINUTES);
-        services.put(config.identifier().id(), service);
+        tasks.put(config.identifier().id(), service);
     }
 
     private ScheduledExecutorService retrieveTask(GameIdentifier identifier, AutomaticPingConfig config, Runnable task) {
-        return services.computeIfAbsent(identifier.id(), id -> {
+        return tasks.computeIfAbsent(identifier.id(), id -> {
             ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
             service.scheduleAtFixedRate(task, 0, config.interval().period(), config.interval().unit());
             return service;
@@ -204,7 +204,7 @@ public class AutomaticPingService implements Service {
     }
 
     private void endTask(Group group, GameIdentifier identifier, boolean configEnabled) {
-        try (var service = services.remove(identifier.id())) {
+        try (var service = tasks.remove(identifier.id())) {
             if(service != null) {
                 updateConfigEnabled(group, identifier, configEnabled);
                 service.shutdown();
