@@ -152,7 +152,7 @@ public class AutomaticPingService implements Service {
                     updateConfigLastPing(group, identifier, Instant.now());
                 }
             } catch(Exception e) {
-                System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task with error: " + e.getMessage());
+                System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Config disabled. Ending task with error: " + e.getMessage());
                 endTask(group, identifier, false);
             }
         };
@@ -168,7 +168,7 @@ public class AutomaticPingService implements Service {
                     updateConfigLastPing(group, identifier, Instant.now());
                 });
             } catch(Exception e) {
-                System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Ending task with error: " + e.getMessage());
+                System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Config disabled. Ending task with error: " + e.getMessage());
                 endTask(group, identifier, false);
             }
         };
