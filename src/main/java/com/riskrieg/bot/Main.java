@@ -108,7 +108,7 @@ public class Main { // TODO: Add command that lets you see a territory's neighbo
           new InteractionListener(handler)
       );
 
-      // Start up separate services
+      // Register services
       bot.registerServices(
               new AutomaticPingService(),
               new AutomaticSkipService()
