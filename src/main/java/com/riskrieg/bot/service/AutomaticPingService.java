@@ -15,7 +15,7 @@ import com.riskrieg.core.api.identifier.PlayerIdentifier;
 import com.riskrieg.core.util.io.RkJsonUtil;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.sharding.ShardManager;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -107,7 +107,7 @@ public class AutomaticPingService implements StartableService {
                 Guild guild = manager.getGuildCache().getElementById(config.guildId());
                 if(guild != null) {
                     Group group = api.retrieveGroup(GroupIdentifier.of(String.valueOf(config.guildId()))).complete();
-                    TextChannel channel = guild.getChannelById(TextChannel.class, config.identifier().id());
+                    GuildMessageChannel channel = guild.getChannelById(GuildMessageChannel.class, config.identifier().id());
                     if(channel != null) {
                         Game game = group.retrieveGame(identifier).complete();
 
@@ -132,7 +132,7 @@ public class AutomaticPingService implements StartableService {
         System.out.println("\r[Services] " + name() + " service running with " + AutomaticPingService.tasks.size() + " " + tasks + ".");
     }
 
-    private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, TextChannel channel) {
+    private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, GuildMessageChannel channel) {
         return () -> {
             try {
                 Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
@@ -166,7 +166,7 @@ public class AutomaticPingService implements StartableService {
         };
     }
 
-    private Runnable runActive(Group group, GameIdentifier identifier, Guild guild, TextChannel channel) {
+    private Runnable runActive(Group group, GameIdentifier identifier, Guild guild, GuildMessageChannel channel) {
         return () -> {
             try {
                 if(isConfigDisabled(group, identifier)) {
