@@ -115,7 +115,7 @@ public class AutomaticPingService implements StartableService {
                         updateConfigLastPing(group, identifier, game.updatedTime().isAfter(config.lastPing()) ? game.updatedTime() : config.lastPing());
 
                         switch(game.phase()) {
-                            case GamePhase.SETUP -> createTask(config, runSetup(group, identifier, guild, channel, config));
+                            case GamePhase.SETUP -> createTask(config, runSetup(group, identifier, guild, channel));
                             case GamePhase.ACTIVE -> createTask(config, runActive(group, identifier, guild, channel));
                             default -> {}
                         }
@@ -132,15 +132,23 @@ public class AutomaticPingService implements StartableService {
         System.out.println("\r[Services] " + name() + " service running with " + this.tasks.size() + " " + tasks + ".");
     }
 
-    private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, TextChannel channel, AutomaticPingConfig config) {
+    private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, TextChannel channel) {
         return () -> {
             try {
+                Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
+                AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
+                if(config == null || isConfigDisabled(group, identifier)) {
+                    endTask(group, identifier, false);
+                    return;
+                }
+
                 Game currentGame = group.retrieveGame(identifier).complete();
                 if(currentGame.phase().equals(GamePhase.ACTIVE)) { // Switch tasks when phase changes
                     endTask(group, identifier, true);
                     createTask(config, runActive(group, identifier, guild, channel));
                     return;
                 }
+
                 Set<String> mentionableMembers = currentGame.nations().stream().filter(nation -> currentGame.claims().stream().noneMatch(claim -> nation.identifier().equals(claim.identifier())))
                         .map(Nation::leaderIdentifier)
                         .map(PlayerIdentifier::id)
@@ -161,6 +169,10 @@ public class AutomaticPingService implements StartableService {
     private Runnable runActive(Group group, GameIdentifier identifier, Guild guild, TextChannel channel) {
         return () -> {
             try {
+                if(isConfigDisabled(group, identifier)) {
+                    endTask(group, identifier, false);
+                    return;
+                }
                 Game currentGame = group.retrieveGame(identifier).complete();
                 currentGame.getCurrentPlayer().ifPresent(player -> {
                     String mention = guild.retrieveMemberById(player.identifier().id()).complete().getAsMention();
@@ -191,6 +203,7 @@ public class AutomaticPingService implements StartableService {
         } else {
             initialDelay = config.interval().asMinutes() - minutesSinceLastPing;
         }
+        System.out.println(initialDelay + " minutes");
         service.scheduleAtFixedRate(task, initialDelay, config.interval().asMinutes(), TimeUnit.MINUTES);
         tasks.put(config.identifier().id(), service);
     }
@@ -201,6 +214,20 @@ public class AutomaticPingService implements StartableService {
             service.scheduleAtFixedRate(task, 0, config.interval().period(), config.interval().unit());
             return service;
         });
+    }
+
+    private boolean isConfigDisabled(Group group, GameIdentifier identifier,) {
+        try {
+            Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
+            AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
+            if(config == null || !config.enabled()) {
+                //endTask(group, identifier, false);
+                return true;
+            }
+            return false;
+        } catch (IOException e) {
+            return true;
+        }
     }
 
     private void endTask(Group group, GameIdentifier identifier, boolean configEnabled) {
