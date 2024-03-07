@@ -128,8 +128,8 @@ public class AutomaticPingService implements StartableService {
         } catch(IOException e) {
             System.err.println("Error reading directory: " + e.getMessage());
         }
-        String tasks = this.tasks.size() == 1 ? "task" : "tasks";
-        System.out.println("\r[Services] " + name() + " service running with " + this.tasks.size() + " " + tasks + ".");
+        String tasks = AutomaticPingService.tasks.size() == 1 ? "task" : "tasks";
+        System.out.println("\r[Services] " + name() + " service running with " + AutomaticPingService.tasks.size() + " " + tasks + ".");
     }
 
     private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, TextChannel channel) {
