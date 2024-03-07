@@ -220,10 +220,7 @@ public class AutomaticPingService implements StartableService {
         try {
             Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
             AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
-            if(config == null || !config.enabled()) {
-                return true;
-            }
-            return false;
+            return config == null || !config.enabled();
         } catch (IOException e) {
             return true;
         }
