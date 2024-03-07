@@ -14,8 +14,11 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 public class Services implements Command {
 
@@ -40,7 +43,17 @@ public class Services implements Command {
 
     @Override
     public CommandData commandData() {
+        OptionData serviceOption = new OptionData(OptionType.STRING, "service", "Select a service to configure.", true)
+                .addChoice("Automatic Turn Ping", "ping-service");
+        OptionData actionOption = new OptionData(OptionType.STRING, "action", "Enable or disable the service.", true)
+                .addChoice("Enable", "enable")
+                .addChoice("Disable", "disable")
+                .addChoice("Adjust", "adjust");
+        OptionData channelOption = new OptionData(OptionType.CHANNEL, "channel", "Apply the current command to the associated channel", false);
+        OptionData pingIntervalOption = new OptionData(OptionType.STRING, "interval", "Adjust the ping interval.", false);
+
         return Commands.slash(settings().name(), settings().description())
+                .addOptions(serviceOption, actionOption, channelOption, pingIntervalOption)
                 .setGuildOnly(true)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
                 .setLocalizationFunction(
@@ -59,6 +72,13 @@ public class Services implements Command {
                 hook.sendMessage(MessageUtil.error(settings, "Invalid guild.")).queue();
                 return;
             }
+
+            var serviceMapping = event.getOption("service");
+            if(serviceMapping != null) {
+                String service = serviceMapping.getAsString();
+            }
+
+
 
 
 
