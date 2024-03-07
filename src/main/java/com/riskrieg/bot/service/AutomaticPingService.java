@@ -216,12 +216,11 @@ public class AutomaticPingService implements StartableService {
         });
     }
 
-    private boolean isConfigDisabled(Group group, GameIdentifier identifier,) {
+    private boolean isConfigDisabled(Group group, GameIdentifier identifier) {
         try {
             Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
             AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
             if(config == null || !config.enabled()) {
-                //endTask(group, identifier, false);
                 return true;
             }
             return false;
