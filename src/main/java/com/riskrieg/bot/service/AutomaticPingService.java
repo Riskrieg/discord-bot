@@ -39,6 +39,8 @@ public class AutomaticPingService implements StartableService {
     public static Interval MIN_PING_INTERVAL = new Interval(30, TimeUnit.MINUTES);
     public static Interval MAX_PING_INTERVAL = new Interval(7, TimeUnit.DAYS);
 
+    private static boolean isPaused = false;
+
     private static final ConcurrentHashMap<String, ScheduledExecutorService> tasks = new ConcurrentHashMap<>();
 
     public AutomaticPingService() {
@@ -48,6 +50,16 @@ public class AutomaticPingService implements StartableService {
     @Override
     public String name() {
         return "AutomaticPing";
+    }
+
+    @Override
+    public void pause() {
+        isPaused = true;
+    }
+
+    @Override
+    public void unpause() {
+        isPaused = false;
     }
 
     @Override
@@ -133,6 +145,9 @@ public class AutomaticPingService implements StartableService {
 
     private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, GuildMessageChannel channel) {
         return () -> {
+            if(isPaused) {
+                return;
+            }
             try {
                 Path path = AutomaticPingConfig.formPath(group.identifier().id(), identifier.id());
                 AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
@@ -167,6 +182,9 @@ public class AutomaticPingService implements StartableService {
 
     private Runnable runActive(Group group, GameIdentifier identifier, Guild guild, GuildMessageChannel channel) {
         return () -> {
+            if(isPaused) {
+                return;
+            }
             try {
                 if(isConfigDisabled(group, identifier)) {
                     endTask(group, identifier, false);
@@ -202,7 +220,6 @@ public class AutomaticPingService implements StartableService {
         } else {
             initialDelay = config.interval().asMinutes() - minutesSinceLastPing;
         }
-        System.out.println(initialDelay + " minutes");
         service.scheduleAtFixedRate(task, initialDelay, config.interval().asMinutes(), TimeUnit.MINUTES);
         tasks.put(config.identifier().id(), service);
     }

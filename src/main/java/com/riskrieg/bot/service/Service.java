@@ -4,4 +4,8 @@ public interface Service {
 
     String name();
 
+    void pause();
+
+    void unpause();
+
 }
