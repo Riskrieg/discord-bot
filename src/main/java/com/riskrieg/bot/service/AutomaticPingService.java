@@ -22,7 +22,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -54,7 +53,7 @@ public class AutomaticPingService implements StartableService {
     @Override
     public void start(ShardManager manager) {
         // Load configs
-        Path configDirectory = Paths.get(BotConstants.CONFIG_PATH + "service/automatic-ping");
+        Path configDirectory = AutomaticPingConfig.baseDirectory();
         if(Files.notExists(configDirectory)) {
             try {
                 Files.createDirectories(configDirectory);
@@ -135,7 +134,7 @@ public class AutomaticPingService implements StartableService {
     private Runnable runSetup(Group group, GameIdentifier identifier, Guild guild, GuildMessageChannel channel) {
         return () -> {
             try {
-                Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
+                Path path = AutomaticPingConfig.formPath(group.identifier().id(), identifier.id());
                 AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
                 if(config == null || isConfigDisabled(group, identifier)) {
                     endTask(group, identifier, false);
@@ -218,7 +217,7 @@ public class AutomaticPingService implements StartableService {
 
     private boolean isConfigDisabled(Group group, GameIdentifier identifier) {
         try {
-            Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
+            Path path = AutomaticPingConfig.formPath(group.identifier().id(), identifier.id());
             AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
             return config == null || !config.enabled();
         } catch (IOException e) {
@@ -237,7 +236,7 @@ public class AutomaticPingService implements StartableService {
 
     private void updateConfigLastPing(Group group, GameIdentifier identifier, Instant instant) {
         try {
-            Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
+            Path path = AutomaticPingConfig.formPath(group.identifier().id(), identifier.id());
             AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
             if(config != null) {
                 RkJsonUtil.write(path, AutomaticPingConfig.class, config.withLastPing(instant));
@@ -249,7 +248,7 @@ public class AutomaticPingService implements StartableService {
 
     private void updateConfigEnabled(Group group, GameIdentifier identifier, boolean enabled) {
         try {
-            Path path = Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + group.identifier().id() + "/" + identifier.id() + ".json");
+            Path path = AutomaticPingConfig.formPath(group.identifier().id(), identifier.id());
             AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
             if(config != null) {
                 RkJsonUtil.write(path, AutomaticPingConfig.class, config.withEnabled(enabled));

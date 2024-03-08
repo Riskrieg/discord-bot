@@ -7,9 +7,8 @@ import com.riskrieg.bot.util.Interval;
 import com.riskrieg.core.api.identifier.GameIdentifier;
 
 import java.nio.file.Path;
-import java.time.Duration;
+import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 public record AutomaticPingConfig(long guildId, GameIdentifier identifier, boolean enabled, Interval interval, Instant lastPing) implements Configuration {
 
@@ -19,6 +18,14 @@ public record AutomaticPingConfig(long guildId, GameIdentifier identifier, boole
         } else if(interval.compareTo(AutomaticPingService.MAX_PING_INTERVAL) > 0) {
             interval = AutomaticPingService.MAX_PING_INTERVAL;
         }
+    }
+
+    public static Path formPath(String groupId, String gameId) {
+        return Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + groupId + "/" + gameId + ".json");
+    }
+
+    public static Path baseDirectory() {
+        return Paths.get(BotConstants.CONFIG_PATH + "service/automatic-ping");
     }
 
     @Override
