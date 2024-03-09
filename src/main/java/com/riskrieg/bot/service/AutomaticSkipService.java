@@ -10,6 +10,16 @@ public class AutomaticSkipService implements StartableService {
     }
 
     @Override
+    public void pause() {
+        
+    }
+
+    @Override
+    public void unpause() {
+
+    }
+
+    @Override
     public void start(ShardManager manager) {
         System.out.println("\r[Services] " + name() + " service running.");
     }
