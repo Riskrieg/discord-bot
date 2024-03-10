@@ -93,6 +93,11 @@ public class AutomaticPingService implements StartableService {
     }
 
     @Override
+    public Configuration retrieveConfig(String groupId, String gameId) {
+        return retrieveConfig(groupId, gameId, AutomaticPingService.DEFAULT_PING_INTERVAL);
+    }
+
+    @Override
     public void deleteConfig(String groupId, String gameId) {
         Path path = AutomaticPingConfig.formPath(groupId, gameId);
         endTask(groupId, gameId, false);

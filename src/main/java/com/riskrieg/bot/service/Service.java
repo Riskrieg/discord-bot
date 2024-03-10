@@ -16,6 +16,8 @@ public interface Service {
 
     Configuration retrieveConfig(String groupId, String gameId, Interval interval);
 
+    Configuration retrieveConfig(String groupId, String gameId);
+
     void deleteConfig(String groupId, String gameId);
 
     void pause();
