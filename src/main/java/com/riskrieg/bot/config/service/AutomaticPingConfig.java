@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 
-public record AutomaticPingConfig(long guildId, GameIdentifier identifier, boolean enabled, Interval interval, Instant lastPing) implements Configuration {
+public record AutomaticPingConfig(String groupId, GameIdentifier identifier, boolean enabled, Interval interval, Instant lastPing) implements Configuration {
 
     public AutomaticPingConfig {
         if(interval.compareTo(AutomaticPingService.MIN_PING_INTERVAL) < 0) {
@@ -30,15 +30,15 @@ public record AutomaticPingConfig(long guildId, GameIdentifier identifier, boole
 
     @Override
     public Path path() {
-        return Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + guildId + "/" + identifier.id() + ".json");
+        return Path.of(BotConstants.CONFIG_PATH + "service/automatic-ping/" + groupId + "/" + identifier.id() + ".json");
     }
 
     public AutomaticPingConfig withLastPing(Instant lastPing) {
-        return new AutomaticPingConfig(guildId, identifier, enabled, interval, lastPing);
+        return new AutomaticPingConfig(groupId, identifier, enabled, interval, lastPing);
     }
 
     public AutomaticPingConfig withEnabled(boolean enabled) {
-        return new AutomaticPingConfig(guildId, identifier, enabled, interval, lastPing);
+        return new AutomaticPingConfig(groupId, identifier, enabled, interval, lastPing);
     }
 
 }

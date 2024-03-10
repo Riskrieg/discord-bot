@@ -1,6 +1,7 @@
 package com.riskrieg.bot.service;
 
 import com.riskrieg.bot.BotConstants;
+import com.riskrieg.bot.config.Configuration;
 import com.riskrieg.bot.config.service.AutomaticPingConfig;
 import com.riskrieg.bot.util.Interval;
 import com.riskrieg.core.api.Riskrieg;
@@ -26,6 +27,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -38,6 +40,7 @@ public class AutomaticPingService implements StartableService {
 
     public static Interval MIN_PING_INTERVAL = new Interval(30, TimeUnit.MINUTES);
     public static Interval MAX_PING_INTERVAL = new Interval(7, TimeUnit.DAYS);
+    public static Interval DEFAULT_PING_INTERVAL = new Interval(4, TimeUnit.HOURS);
 
     private static boolean isPaused = false;
 
@@ -50,6 +53,54 @@ public class AutomaticPingService implements StartableService {
     @Override
     public String name() {
         return "AutomaticPing";
+    }
+
+    @Override
+    public Configuration createConfig(String groupId, String gameId, Interval interval) {
+        Path path = AutomaticPingConfig.formPath(groupId, gameId);
+        Riskrieg api = RiskriegBuilder.createLocal(Path.of(BotConstants.REPOSITORY_PATH)).build();
+        try {
+            if(Files.notExists(path)) {
+                Group group = api.retrieveGroup(GroupIdentifier.of(groupId)).complete();
+                Game game = group.retrieveGame(GameIdentifier.of(gameId)).complete();
+
+                AutomaticPingConfig config = new AutomaticPingConfig(groupId, GameIdentifier.of(gameId), true, interval, game.updatedTime());
+                RkJsonUtil.write(path, AutomaticPingConfig.class, config);
+                return config;
+            }
+        } catch(Exception e) { // game doesn't exist or had error writing config
+            return null;
+        }
+        return null;
+    }
+
+    @Override
+    public Optional<Configuration> getConfig(String groupId, String gameId) {
+        try {
+            AutomaticPingConfig config = RkJsonUtil.read(AutomaticPingConfig.formPath(groupId, gameId), AutomaticPingConfig.class);
+            return Optional.ofNullable(config);
+        } catch (IOException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Configuration retrieveConfig(String groupId, String gameId, Interval interval) {
+        return getConfig(groupId, gameId).orElseGet(() -> {
+            deleteConfig(groupId, gameId); // just in case of corrupted config or something
+            return createConfig(groupId, gameId, interval);
+        });
+    }
+
+    @Override
+    public void deleteConfig(String groupId, String gameId) {
+        Path path = AutomaticPingConfig.formPath(groupId, gameId);
+        endTask(groupId, gameId, false);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            // fail silently
+        }
     }
 
     @Override
@@ -115,15 +166,14 @@ public class AutomaticPingService implements StartableService {
                 GameIdentifier identifier = pair.getKey();
                 AutomaticPingConfig config = pair.getValue();
 
-                Guild guild = manager.getGuildCache().getElementById(config.guildId());
+                Guild guild = manager.getGuildCache().getElementById(config.groupId());
                 if(guild != null) {
-                    Group group = api.retrieveGroup(GroupIdentifier.of(String.valueOf(config.guildId()))).complete();
+                    Group group = api.retrieveGroup(GroupIdentifier.of(config.groupId())).complete();
                     GuildMessageChannel channel = guild.getChannelById(GuildMessageChannel.class, config.identifier().id());
                     if(channel != null) {
                         Game game = group.retrieveGame(identifier).complete();
 
-                        // Update lastPing to be the later of config.lastPing() or game.updatedTime()
-                        updateConfigLastPing(group, identifier, game.updatedTime().isAfter(config.lastPing()) ? game.updatedTime() : config.lastPing());
+                        updateConfigLastPing(group.identifier().id(), identifier.id(), game.updatedTime().isAfter(config.lastPing()) ? game.updatedTime() : config.lastPing());
 
                         switch(game.phase()) {
                             case GamePhase.SETUP -> createTask(config, runSetup(group, identifier, guild, channel));
@@ -151,14 +201,14 @@ public class AutomaticPingService implements StartableService {
             try {
                 Path path = AutomaticPingConfig.formPath(group.identifier().id(), identifier.id());
                 AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
-                if(config == null || isConfigDisabled(group, identifier)) {
-                    endTask(group, identifier, false);
+                if(config == null || isConfigDisabled(group.identifier().id(), identifier.id())) {
+                    endTask(group.identifier().id(), identifier.id(), false);
                     return;
                 }
 
                 Game currentGame = group.retrieveGame(identifier).complete();
                 if(currentGame.phase().equals(GamePhase.ACTIVE)) { // Switch tasks when phase changes
-                    endTask(group, identifier, true);
+                    endTask(group.identifier().id(), identifier.id(), true);
                     createTask(config, runActive(group, identifier, guild, channel));
                     return;
                 }
@@ -171,11 +221,11 @@ public class AutomaticPingService implements StartableService {
                         .collect(Collectors.toSet());
                 if(!mentionableMembers.isEmpty()) {
                     channel.sendMessage("Reminder to finish setting up this game: " + String.join(", ", mentionableMembers)).queue();
-                    updateConfigLastPing(group, identifier, Instant.now());
+                    updateConfigLastPing(group.identifier().id(), identifier.id(), Instant.now());
                 }
             } catch(Exception e) {
                 System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Config disabled. Ending task with error: " + e.getMessage());
-                endTask(group, identifier, false);
+                endTask(group.identifier().id(), identifier.id(), false);
             }
         };
     }
@@ -186,19 +236,19 @@ public class AutomaticPingService implements StartableService {
                 return;
             }
             try {
-                if(isConfigDisabled(group, identifier)) {
-                    endTask(group, identifier, false);
+                if(isConfigDisabled(group.identifier().id(), identifier.id())) {
+                    endTask(group.identifier().id(), identifier.id(), false);
                     return;
                 }
                 Game currentGame = group.retrieveGame(identifier).complete();
                 currentGame.getCurrentPlayer().ifPresent(player -> {
                     String mention = guild.retrieveMemberById(player.identifier().id()).complete().getAsMention();
                     channel.sendMessage("Reminder that it is your turn " + mention + ".").queue();
-                    updateConfigLastPing(group, identifier, Instant.now());
+                    updateConfigLastPing(group.identifier().id(), identifier.id(), Instant.now());
                 });
             } catch(Exception e) {
                 System.err.println("\r[Services] " + name() + " service failed to load game with ID " + identifier.id() + ". Config disabled. Ending task with error: " + e.getMessage());
-                endTask(group, identifier, false);
+                endTask(group.identifier().id(), identifier.id(), false);
             }
         };
     }
@@ -232,9 +282,9 @@ public class AutomaticPingService implements StartableService {
         });
     }
 
-    private boolean isConfigDisabled(Group group, GameIdentifier identifier) {
+    private boolean isConfigDisabled(String groupId, String gameId) {
         try {
-            Path path = AutomaticPingConfig.formPath(group.identifier().id(), identifier.id());
+            Path path = AutomaticPingConfig.formPath(groupId, gameId);
             AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
             return config == null || !config.enabled();
         } catch (IOException e) {
@@ -242,36 +292,36 @@ public class AutomaticPingService implements StartableService {
         }
     }
 
-    private void endTask(Group group, GameIdentifier identifier, boolean configEnabled) {
-        try (var service = tasks.remove(identifier.id())) {
+    private void endTask(String groupId, String gameId, boolean configEnabled) {
+        try (var service = tasks.remove(gameId)) {
             if(service != null) {
-                updateConfigEnabled(group, identifier, configEnabled);
+                updateConfigEnabled(groupId, gameId, configEnabled);
                 service.shutdown();
             }
         }
     }
 
-    private void updateConfigLastPing(Group group, GameIdentifier identifier, Instant instant) {
+    private void updateConfigLastPing(String groupId, String gameId, Instant instant) {
         try {
-            Path path = AutomaticPingConfig.formPath(group.identifier().id(), identifier.id());
+            Path path = AutomaticPingConfig.formPath(groupId, gameId);
             AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
             if(config != null) {
                 RkJsonUtil.write(path, AutomaticPingConfig.class, config.withLastPing(instant));
             }
         } catch (IOException e) {
-            System.err.println("\r[Services] " + name() + " service failed to update 'lastPing' parameter with config ID " + identifier.id() + ". Error: " + e.getMessage());
+            System.err.println("\r[Services] " + name() + " service failed to update 'lastPing' parameter with config ID " + gameId + ". Error: " + e.getMessage());
         }
     }
 
-    private void updateConfigEnabled(Group group, GameIdentifier identifier, boolean enabled) {
+    private void updateConfigEnabled(String groupId, String gameId, boolean enabled) {
         try {
-            Path path = AutomaticPingConfig.formPath(group.identifier().id(), identifier.id());
+            Path path = AutomaticPingConfig.formPath(groupId, gameId);
             AutomaticPingConfig config = RkJsonUtil.read(path, AutomaticPingConfig.class);
             if(config != null) {
                 RkJsonUtil.write(path, AutomaticPingConfig.class, config.withEnabled(enabled));
             }
         } catch (IOException e) {
-            System.err.println("\r[Services] " + name() + " service failed to update 'enabled' parameter with config ID " + identifier.id() + ". Error: " + e.getMessage());
+            System.err.println("\r[Services] " + name() + " service failed to update 'enabled' parameter with config ID " + gameId + ". Error: " + e.getMessage());
         }
     }
 
